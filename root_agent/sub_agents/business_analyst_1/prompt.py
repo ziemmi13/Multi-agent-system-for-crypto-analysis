@@ -1,5 +1,3 @@
-"""Prompt for the business analyst 1."""
-
 BUSINESS_ANALYST_PROMPT1 = """
 You are a professional crypto business analyst.
 

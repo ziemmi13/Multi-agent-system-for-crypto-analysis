@@ -31,7 +31,7 @@ def get_news_from_cryptopanic(currency: str, filter: str = "hot") -> str:
         return f"No news found for {currency}."
 
     output = []
-    for post in results[:5]:
+    for post in results:
         title = post.get("title", "No title")
         url_ = post.get("url", "No URL provided")
         published = post.get("published_at", "Unknown time")
