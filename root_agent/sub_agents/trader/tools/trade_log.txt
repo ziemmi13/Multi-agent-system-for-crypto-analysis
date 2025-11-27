@@ -1,0 +1,2 @@
+2025-11-27T07:01:31.188833 - HOLD - bitcoin (btc) at 91240 usd
+2025-11-27T07:03:57.638781 - HOLD - stellar (xlm) at 0.258377 usd
