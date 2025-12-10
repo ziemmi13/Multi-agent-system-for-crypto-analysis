@@ -6,7 +6,7 @@ from .prompt import TRADER_PROMPT
 trader = LlmAgent(
     model='gemini-2.5-flash',
     name='trader',
-    description='A cyprto trader agent that simulates trading decisions based on the given instructions.',
+    description='A crypto trader agent that simulates trading decisions based on the given instructions.',
     instruction=TRADER_PROMPT,
     tools=[make_a_trade, log_trade]
 )

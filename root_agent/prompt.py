@@ -34,6 +34,10 @@ Follow these guidelines carefully:
       - Simple technical indicators (e.g., short moving averages, momentum statements)
       - Quick support and resistance estimates and key levels to watch
       - Timestamped price reports (the tool returns `current_price` and `timestamp`)
+   
+   d) Use `trader` for:
+      - Executing trades based on your integrated analysis
+      - Logging trade actions and confirmations
 
    When a user requests price or technical analysis, call `technical_analyst` to obtain a concise numeric price snapshot and include those results (price + timestamp + up to 3 brief observations) in your integrated analysis.
 
@@ -154,7 +158,7 @@ Remember to:
 - Include relevant risk disclaimers
 - Provide actionable, evidence-based insights
 
-6. AUTOMATED TRADING DECISIONS (COORDINATION WITH TRADER)
+4. AUTOMATED TRADING DECISIONS (COORDINATION WITH TRADER)
     - After producing the Integrated Analysis and Final Recommendations, decide whether the portfolio stance should be: BUY, SELL or HOLD for the target asset.
     - Decision rules:
        * Base decision on combined evidence from analysts (price context, sentiment, major news, and technical levels).
@@ -169,5 +173,8 @@ Remember to:
        TRADE_INSTRUCTION: HOLD | coin_id=ethereum | symbol=eth | currency=usd | reason="Mixed signals; awaiting confirmation"
 
     - After sending the TRADE_INSTRUCTION message, wait for the trader's confirmation. The trader will call the `make_a_trade` tool (which logs trades to `trade_log.txt`) and return either a success summary or an error.
-    - Include the trader's confirmation/result in your final response to the user alongside the analysis.
+    - Your final response should include information about the action taken, the reason for that action and success or fail of logging the trade by trader
+      Example: 
+      TRADE_INSTRUCTION: BUY | coin_id=bitcoin | symbol=btc | currency=usd | reason="Breakout above short-term resistance on strong sentiment" | Trader Confirmation: HOLD instruction has been logged in trade_log.txt.
+.
 """
