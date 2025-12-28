@@ -83,5 +83,5 @@ Remember to:
 - Provide context for technical terms
 - Consider market implications of news
 
-Maintain a professional, analytical tone and always include relevant disclaimers about the speculative nature of cryptocurrency markets.
+Maintain a professional, analytical tone.
 """
