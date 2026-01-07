@@ -82,7 +82,6 @@ def search_similar_news(article_headline: str, article_summary: str, similarity_
         # Process results and filter by similarity threshold
         matches = []
         distances = results['distances'][0] if results.get('distances') else []
-        print(f"{distances = }")
         ids = results['ids'][0]
         
         for article_id, distance in zip(ids, distances):

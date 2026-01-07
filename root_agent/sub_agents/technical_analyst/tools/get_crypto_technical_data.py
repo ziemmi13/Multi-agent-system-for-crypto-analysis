@@ -26,7 +26,6 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
     technical_data = {}
     for key, url in {**general_endpoints, **specific_coin_endpoints}.items():
         response = requests.get(url)
-        print(f"{response = }")
         if response.status_code == 200:
             technical_data[key] = response.json()
         else:

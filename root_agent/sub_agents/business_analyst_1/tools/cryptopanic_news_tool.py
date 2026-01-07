@@ -38,6 +38,3 @@ def get_news_from_cryptopanic(currency: str, filter: str = "hot") -> str:
         output.append(f"{title}\n {description}\n {published}\n")
 
     return "\n".join(output)
-
-a = get_news_from_cryptopanic("sol")
-print(a)
