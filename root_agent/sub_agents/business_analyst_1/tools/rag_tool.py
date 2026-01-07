@@ -11,9 +11,24 @@ root_dir = pathlib.Path(__file__).parent.parent.parent.parent
 
 load_dotenv(root_dir / '.env')
 
-# Initialize ChromaDB client and collection
-CHROMA_DB_PATH = root_dir / "database" / "chroma_db"
-CSV_PATH = root_dir / "database" / "cryptonews.csv"
+# Determine Chroma DB path: prefer project-level `database/chroma_db` if present,
+# otherwise fall back to `root_agent/database/chroma_db`.
+project_root = pathlib.Path(__file__).resolve().parents[4]
+agent_root = root_dir
+project_db = project_root / "database" / "chroma_db"
+agent_db = agent_root / "database" / "chroma_db"
+
+if (project_db / "chroma.sqlite3").exists():
+    CHROMA_DB_PATH = project_db
+elif (agent_db / "chroma.sqlite3").exists():
+    CHROMA_DB_PATH = agent_db
+else:
+    CHROMA_DB_PATH = project_db  # fallback - will create if missing
+
+# CSV path: prefer project-level CSV
+project_csv = project_root / "database" / "cryptonews.csv"
+agent_csv = agent_root / "database" / "cryptonews.csv"
+CSV_PATH = project_csv if project_csv.exists() else agent_csv
 
 # Initialize embedding function
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
@@ -35,76 +50,80 @@ def _load_csv_data():
         _csv_data = pd.read_csv(CSV_PATH)
     return _csv_data
 
-def search_similar_news(article_text: str, similarity_threshold: float = 0.3) -> str:
+def search_similar_news(article_headline: str, article_summary: str, similarity_threshold: float = 0.7) -> str:
     """
     Search for similar news articles summaries in the RAG database.
     
     Args:
-        article_text: The text content or title of the article to search for
-        similarity_threshold: Maximum distance threshold (lower = more similar). 
-                             Default 0.3 for very similar matches.
-                             ChromaDB uses cosine distance (0 = identical, 1 = completely different)
+        article_headline: The headline of the article
+        article_summary: The summary of the article to search for
+        similarity_threshold: Similarity threshold (0-1, higher = more similar). Default 0.7.
     
     Returns:
-        A formatted string with matching article information (summary, cause, effect, sentiment) if found, otherwise a message if no similar articles found.
+        A formatted string with matching article information (headline, summary, cause, effect, sentiment) if found, 
+        otherwise empty string if no matches.
     """
     try:
         # Generate embedding for the article text
-        article_embedding = openai_ef([article_text])
+        article_embedding = openai_ef([article_summary])
         
         # Query ChromaDB for similar articles
-        # n_results=5 to get top matches, we'll filter by threshold
         results = collection.query(
             query_embeddings=article_embedding,
             n_results=5
         )
         
         if not results['ids'] or len(results['ids'][0]) == 0:
-            return "No similar articles summaries found in the database."
+            return ""
         
-        # Load CSV data to get cause and effect
+        # Load CSV data to get cause, effect, headline, etc.
         csv_data = _load_csv_data()
         
-        # Process results and filter by distance threshold
+        # Process results and filter by similarity threshold
         matches = []
         distances = results['distances'][0] if results.get('distances') else []
+        print(f"{distances = }")
         ids = results['ids'][0]
-        metadatas = results['metadatas'][0] if results.get('metadatas') else []
         
-        for i, (article_id, distance) in enumerate(zip(ids, distances)):
-            # Filter by similarity threshold (distance <= threshold means similar)
-            if distance <= similarity_threshold:
-                # Get full data from CSV
-                article_row = csv_data[csv_data['id'] == int(article_id)]
+        for article_id, distance in zip(ids, distances):
+            # Convert distance to similarity (similarity = 1 - distance for cosine)
+            similarity = max(0.0, 1.0 - distance)
+            
+            # Filter by similarity threshold
+            if similarity >= similarity_threshold:
+                # Get full data from CSV using int(article_id)
+                try:
+                    article_row = csv_data[csv_data['id'] == int(article_id)]
+                except (ValueError, TypeError):
+                    continue
                 
                 if not article_row.empty:
                     row = article_row.iloc[0]
                     matches.append({
-                        'id': article_id,
-                        'distance': distance,
+                        'headline': row.get('headline', row.get('title', 'N/A')),
                         'summary': row.get('summary', 'N/A'),
                         'cause': row.get('cause', 'N/A'),
                         'effect': row.get('effect', 'N/A'),
                         'sentiment': row.get('sentiment', 'N/A'),
-                        'datetime': row.get('datetime', 'N/A'),
-                        'url': row.get('url', 'N/A')
+                        'similarity': similarity,
                     })
         
         if not matches:
-            return f"No similar articles found (closest match distance: {distances[0]:.4f}, threshold: {similarity_threshold})"
+            return ""
         
-        # Format output
+        # Format output: compact list of matching articles
         output = []
         for match in matches:
-            output.append(f"=== Similar Article Found (Distance: {match['distance']:.4f}) ===")
-            output.append(f"Date: {match['datetime']}")
-            output.append(f"\nSummary:\n{match['summary']}")
-            output.append(f"\nCause:\n{match['cause']}")
-            output.append(f"\nEffect:\n{match['effect']}")
-            output.append(f"Sentiment: {match['sentiment']}")
-            output.append("")  # Empty line between matches
+            output.append(f"**Similar Article Found ({match['similarity']*100:.0f}% match):**")
+            output.append(f"Original Headline: {article_headline}")
+            output.append(f"- Headline: {match['headline']}")
+            output.append(f"- Summary: {match['summary']}")
+            output.append(f"- Cause: {match['cause']}")
+            output.append(f"- Effect: {match['effect']}")
+            output.append(f"- Sentiment: {match['sentiment']}")
+            output.append("")
         
-        return "\n".join(output)
+        return "\n".join(output).strip()
         
     except Exception as e:
         return f"Error searching similar news: {str(e)}"

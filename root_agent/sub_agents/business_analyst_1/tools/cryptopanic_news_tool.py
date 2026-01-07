@@ -4,7 +4,7 @@ import pathlib
 import requests
 
 # Load environment variables from root directory
-root_dir = pathlib.Path(__file__).parent
+root_dir = pathlib.Path(__file__).parent.parent.parent.parent
 load_dotenv(root_dir / '.env')
 API_KEY = os.getenv('CRYPTO_PANIC_API_KEY')
 
@@ -33,8 +33,11 @@ def get_news_from_cryptopanic(currency: str, filter: str = "hot") -> str:
     output = []
     for post in results:
         title = post.get("title", "No title")
-        url_ = post.get("url", "No URL provided")
+        description = post.get("description", "No description")
         published = post.get("published_at", "Unknown time")
-        output.append(f"{title}\n {url_}\n {published}\n")
+        output.append(f"{title}\n {description}\n {published}\n")
 
     return "\n".join(output)
+
+a = get_news_from_cryptopanic("sol")
+print(a)

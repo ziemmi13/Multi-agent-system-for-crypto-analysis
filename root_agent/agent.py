@@ -3,7 +3,6 @@ from google.adk.tools.agent_tool import AgentTool
 
 from . import prompt
 from .sub_agents.business_analyst_1.agent import business_analyst_1
-from .sub_agents.business_analyst_2.agent import business_analyst_2
 from .sub_agents.technical_analyst.agent import technical_analyst
 from .sub_agents.trader.agent import trader
 
@@ -14,7 +13,6 @@ root_agent = LlmAgent(
     instruction=prompt.ROOT_AGENT_PROMPT,
     tools=[
         AgentTool(agent=business_analyst_1), 
-        AgentTool(agent=business_analyst_2), 
         AgentTool(agent=technical_analyst),
         AgentTool(agent=trader)
         ],
