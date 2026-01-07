@@ -1,0 +1,22 @@
+{
+  "total_portfolio_value_usd": 10000.0,
+  "cash_usd": 10000.0,
+  "positions": [],
+  "statistics": {
+    "total_pnl": 0.0,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 0.0,
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "win_rate": 0.0,
+    "last_updated": null
+  },
+  "daily_stats": {
+    "date": null,
+    "trades_today": 0,
+    "pnl_today": 0.0,
+    "max_daily_loss": 0.0
+  }
+}
+

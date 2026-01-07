@@ -117,19 +117,19 @@ Remember to:
 4. AUTOMATED TRADING DECISIONS (COORDINATION WITH TRADER)
     - After producing the Integrated Analysis and Final Recommendations, decide whether the portfolio stance should be: BUY, SELL or HOLD for the target asset.
     - Decision rules:
-       * Base decision on combined evidence from business_analyst_1 and technical_analyst (price context, major news, and technical levels).
-    - When issuing a trade instruction to the trader, use the exact message format below so the trader agent can execute and log it reliably:
+       * Base decision on combined evidence from `business_analyst_1` and `technical_analyst` (price context, major news, and technical levels).
+    - When issuing a trade instruction to the `trader`, produce a structured `TradeRequest` JSON object that conforms to the project's `TradeRequest` contract (see `root_agent/tools/trade_formatter.py` and `trader/tools/trade_schema.json`).
 
-    TRADE MESSAGE FORMAT (send this exact text to the `trader` agent):
-    TRADE_INSTRUCTION: <ACTION> | coin_id=<coin_id> | symbol=<symbol> | currency=<currency> | reason="<one-line rationale>"
+    - Use the `format_trade_request` tool to build the canonical trade request. Then send the JSON (as a dict or compact JSON string) to the `trader` agent for execution.
 
-    - Examples:
-       TRADE_INSTRUCTION: BUY | coin_id=bitcoin | symbol=btc | currency=usd | reason="Breakout above short-term resistance on strong sentiment"
-       TRADE_INSTRUCTION: HOLD | coin_id=ethereum | symbol=eth | currency=usd | reason="Mixed signals; awaiting confirmation"
+    - Requirements for the `TradeRequest`:
+       * Must include `id`, `timestamp`, `action` (buy/sell/hold), `asset` (symbol, coin_id, current_price_usd), `position` (quantity, order_type), and optional `rationale`.
 
-    - After sending the TRADE_INSTRUCTION message, wait for the trader's confirmation. The trader will call the `make_a_trade` tool (which logs trades to `trade_log.txt`) and return either a success summary or an error.
-    - Your final response should include information about the action taken, the reason for that action and success or fail of logging the trade by trader
-      Example: 
-      TRADE_INSTRUCTION: BUY | coin_id=bitcoin | symbol=btc | currency=usd | reason="Breakout above short-term resistance on strong sentiment" | Trader Confirmation: HOLD instruction has been logged in trade_log.txt.
-.
+    - After sending the `TradeRequest`, wait for the trader's confirmation. The trader will process the request and return a summary (success or error). Your final response should include the action taken, the reason, and whether the trade was logged or executed.
+
+    - Example flow:
+       1. Call `format_trade_request(action, coin_id, symbol, quantity, entry_price, target_exit_price, stop_loss_price, order_type, currency, rationale)` to build the request.
+       2. Send the resulting dict (or JSON) to the `trader` agent.
+       3. Wait for and include the trader's confirmation in your final output.
+
 """

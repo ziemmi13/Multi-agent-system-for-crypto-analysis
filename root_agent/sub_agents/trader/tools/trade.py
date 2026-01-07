@@ -28,8 +28,7 @@ def make_a_trade(action: str, coin_id: str, symbol: str,  currency: str = "usd")
             price = None
 
         log_trade(coin_id, symbol, price if price is not None else 0.0, currency, action_l)
-        return {"action": "hold", "coin": coin_id, "symbol": symbol, "price": price, "message": "HOLD recorded"}
-
+        
     if action_l not in ("buy", "sell"):
         return {"error": "Unsupported action. Use 'buy', 'sell', or 'hold'."}
 
@@ -46,7 +45,7 @@ def make_a_trade(action: str, coin_id: str, symbol: str,  currency: str = "usd")
     # Save trade to notebook
     log_trade(coin_id, symbol, price, currency, action_l)
 
-    return {"coin": coin_id, "symbol": symbol, "price": price}
+    return {"action": action_l, "coin": coin_id, "symbol": symbol, "price": price}
 
 def log_trade(coin_id: str, symbol: str, price: float, currency: str, action: str):
     """Logs the trade action to a local file with a timestamp.
