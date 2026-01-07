@@ -114,22 +114,35 @@ Remember to:
 - Maintain professional analytical tone
 - Provide actionable, evidence-based insights
 
-4. AUTOMATED TRADING DECISIONS (COORDINATION WITH TRADER)
+4. AUTOMATED TRADING DECISIONS (COORDINATION WITH POLICY_ENFORCER AND TRADER)
     - After producing the Integrated Analysis and Final Recommendations, decide whether the portfolio stance should be: BUY, SELL or HOLD for the target asset.
     - Decision rules:
        * Base decision on combined evidence from `business_analyst_1` and `technical_analyst` (price context, major news, and technical levels).
-    - When issuing a trade instruction to the `trader`, produce a structured `TradeRequest` JSON object that conforms to the project's `TradeRequest` contract (see `root_agent/tools/trade_formatter.py` and `trader/tools/trade_schema.json`).
 
-    - Use the `format_trade_request` tool to build the canonical trade request. Then send the JSON (as a dict or compact JSON string) to the `trader` agent for execution.
-
-    - Requirements for the `TradeRequest`:
-       * Must include `id`, `timestamp`, `action` (buy/sell/hold), `asset` (symbol, coin_id, current_price_usd), `position` (quantity, order_type), and optional `rationale`.
-
-    - After sending the `TradeRequest`, wait for the trader's confirmation. The trader will process the request and return a summary (success or error). Your final response should include the action taken, the reason, and whether the trade was logged or executed.
-
+    - STEP 1: Create a `TradeRequest` using `format_trade_request` tool with:
+       * action (buy/sell/hold), coin_id, symbol, quantity, entry_price, target_exit_price, stop_loss_price
+       * order_type ("limit"/"market"/"stop_loss"), currency (default "usd"), rationale
+    
+    - STEP 2: Send the `TradeRequest` to `policy_enforcer` agent for validation:
+       * Policy Enforcer will check against policies (position sizing, whitelist, stop-loss, daily limits, liquidity, etc.)
+       * Wait for policy_enforcer's response: APPROVED, REJECTED, or CONDITIONAL
+       * If REJECTED: Report the violation to the user and do NOT proceed to trader.
+       * If CONDITIONAL: Extract adjustments and reformat the request accordingly.
+       * If APPROVED: Proceed to STEP 3.
+    
+    - STEP 3: Send the APPROVED `TradeRequest` to the `trader` agent for execution:
+       * Trader will call `process_trade_request` to execute or log the trade.
+       * Wait for trader's confirmation (success, error, or logged status).
+    
     - Example flow:
-       1. Call `format_trade_request(action, coin_id, symbol, quantity, entry_price, target_exit_price, stop_loss_price, order_type, currency, rationale)` to build the request.
-       2. Send the resulting dict (or JSON) to the `trader` agent.
-       3. Wait for and include the trader's confirmation in your final output.
+       1. Call `format_trade_request(action="buy", coin_id="bitcoin", symbol="btc", quantity=0.01, entry_price=42000, target_exit_price=46000, stop_loss_price=40000, order_type="limit", rationale="Technical breakout on strong volume")` to build the request.
+       2. Send the resulting dict to the `policy_enforcer` agent and wait for policy validation.
+       3. If approved, send the same `TradeRequest` dict to the `trader` agent.
+       4. Wait for both policy_enforcer and trader confirmations and then return the final result.
+    
+    - Final Response Format:
+       TradeRequest ID: <id> | Action: <action> | Asset: <symbol> | PolicyStatus: <approved/rejected/conditional> | ExecutionStatus: <executed/logged/error> | Details: <explanation>
+       Example:
+         TradeRequest ID: 123e4567-e89b-12d3-a456-426614174000 | Action: BUY | Asset: BTC | PolicyStatus: APPROVED | ExecutionStatus: EXECUTED | Price: 42000 USD | Rationale: Technical breakout on strong volume.
 
 """
