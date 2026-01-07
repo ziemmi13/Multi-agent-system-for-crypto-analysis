@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 import os
+import json
 
 def make_a_trade(action: str, coin_id: str, symbol: str,  currency: str = "usd"):
     """Execute or record a trading instruction.
@@ -61,4 +62,70 @@ def log_trade(coin_id: str, symbol: str, price: float, currency: str, action: st
     log_file_path = os.path.join(os.path.dirname(__file__), "trade_log.txt")
     with open(log_file_path, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
+
+
+def process_trade_request(trade_request: dict) -> dict:
+    """Process a structured TradeRequest (dict).
+
+    Accepts either a dict following the TradeRequest contract or a JSON string.
+    Executes or logs the trade using existing helpers and appends the full request
+    and execution result to `trade_log.txt` for auditing.
+    Returns a dict: {"trade_request": {...}, "execution": {...}} or an error dict.
+    """
+    # Expect a dict (the agent runtime will pass parsed JSON as a dict).
+    if not isinstance(trade_request, dict):
+        return {"error": "trade_request must be a dict"}
+
+    # Basic validation
+    action = trade_request.get("action", "").lower()
+    asset = trade_request.get("asset", {})
+    position = trade_request.get("position", {})
+
+    coin_id = asset.get("coin_id")
+    symbol = asset.get("symbol")
+    currency = asset.get("currency", "usd")
+
+    if action not in ("buy", "sell", "hold"):
+        return {"error": "Invalid action in trade_request"}
+    if not coin_id or not symbol:
+        return {"error": "asset.coin_id and asset.symbol are required"}
+
+    execution = None
+    try:
+        if action == "hold":
+            # Use make_a_trade to fetch price & log hold
+            exec_res = make_a_trade("hold", coin_id, symbol, currency)
+            execution = {"status": "logged_hold", "result": exec_res}
+        else:
+            exec_res = make_a_trade(action, coin_id, symbol, currency)
+            if exec_res.get("error"):
+                execution = {"status": "error", "result": exec_res}
+            else:
+                execution = {"status": "executed", "result": exec_res}
+    except Exception as e:
+        execution = {"status": "error", "result": str(e)}
+
+    # Append audit log with the full request and execution result
+    try:
+        log_file_path = os.path.join(os.path.dirname(__file__), "trade_log.txt")
+        with open(log_file_path, "a", encoding="utf-8") as f:
+            entry = {"timestamp": datetime.utcnow().isoformat(), "trade_request": trade_request, "execution": execution}
+            f.write(json.dumps(entry, default=str) + "\n")
+    except Exception:
+        pass
+
+    return {"trade_request": trade_request, "execution": execution}
+
+
+def process_trade_request_json(trade_request_json: str) -> dict:
+    """Wrapper that accepts a JSON string, parses it, and calls `process_trade_request`.
+
+    Useful for tool APIs that prefer a single-string parameter.
+    """
+    try:
+        payload = json.loads(trade_request_json)
+    except Exception as e:
+        return {"error": f"Invalid JSON: {e}"}
+
+    return process_trade_request(payload)
     

@@ -38,7 +38,6 @@ def format_trade_request(action: str, coin_id: str, symbol: str, quantity: float
             "order_type": order_type
         },
         "rationale": rationale,
-        "risk_metrics": {}
     }
 
     trade_json = json.dumps(trade, separators=(',', ':'), sort_keys=False)
