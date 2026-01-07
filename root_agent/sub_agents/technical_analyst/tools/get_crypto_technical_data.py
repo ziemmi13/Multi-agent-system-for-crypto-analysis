@@ -7,7 +7,7 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
     Args:
         id (str): The CoinGecko ID of the cryptocurrency (e.g., 'bitcoin').
         symbol (str): The symbol of the cryptocurrency (e.g., 'btc').
-        currency (str, optional): The fiat currency to compare against (default is 'usd').
+        currency (str, optional): The fiat currency to compare against (e.g., 'usd').
     Returns:
         Dict[str, Any]: A dictionary containing various technical data points.
     """
@@ -16,7 +16,6 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
 
     general_endpoints = {
         "global_data": f"{coingecko_endpoint}global",
-        "trending_coins": f"{coingecko_endpoint}search/trending",
     }
 
     specific_coin_endpoints = {
@@ -27,6 +26,7 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
     technical_data = {}
     for key, url in {**general_endpoints, **specific_coin_endpoints}.items():
         response = requests.get(url)
+        print(f"{response = }")
         if response.status_code == 200:
             technical_data[key] = response.json()
         else:
@@ -68,19 +68,6 @@ def format_techinical_data(technical_data: Dict[str, Any], symbol: str) -> str:
         or "Not available"
     )
 
-    # Trending coins (normalized)
-    trending_coins_json = technical_data.get("trending_coins", {}) or {}
-    trending_coins = {}
-    for trading_coin in trending_coins_json.get("coins", []):
-        item = trading_coin.get("item", {})
-        symbol_ = item.get("symbol", "N/A")
-        trending_coins[symbol_] = {
-            "id": item.get("id", "N/A"),
-            "symbol": symbol_,
-            "market_cap_rank": item.get("market_cap_rank", "N/A"),
-            "price_in_btc": item.get("price_btc", "N/A"),
-        }
-
     # Detailed coin-level data
     detailed_raw = technical_data.get("detailed_data_for_coin", {}) or {}
     detailed_fields = [
@@ -113,17 +100,6 @@ def format_techinical_data(technical_data: Dict[str, Any], symbol: str) -> str:
     max_supply = market_data.get("max_supply", "N/A")
     circulating_supply = market_data.get("circulating_supply", "N/A")
 
-    # Ticker summary
-    tickers = detailed_raw.get("tickers", []) or []
-    ticker_data = []
-    for ticker in tickers:
-        ticker_data.append({
-            "market_name": ticker.get("market", {}).get("name", "N/A"),
-            "last_price": ticker.get("last", "N/A"),
-            "volume": ticker.get("volume", "N/A"),
-            "trust_score": ticker.get("trust_score", "N/A"),
-        })
-
     # Compose a readable multi-line output using a list of lines for clarity
     lines = [f"Research done for the coin with symbol: {symbol}", ""]
     lines.append("Current Price:")
@@ -134,9 +110,6 @@ def format_techinical_data(technical_data: Dict[str, Any], symbol: str) -> str:
     lines.append("")
     lines.append("Market Cap Percentage:")
     lines.append(str(coin_market_cap_percentage))
-    lines.append("")
-    lines.append("Trending Coins:")
-    lines.append(str(trending_coins))
     lines.append("")
     lines.append("Detailed Data for Coin:")
     lines.append(str(detailed_data_for_coin))
@@ -152,7 +125,5 @@ def format_techinical_data(technical_data: Dict[str, Any], symbol: str) -> str:
     lines.append(f"Price change 30d: {price_change_percentage_30d}")
     lines.append(f"Supply - total: {total_supply}, max: {max_supply}, circulating: {circulating_supply}")
     lines.append("")
-    lines.append("Top tickers (sample):")
-    lines.append(str(ticker_data[:5]))
 
     return "\n".join(lines)

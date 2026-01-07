@@ -39,12 +39,6 @@ TECHNICAL SUMMARY
 - Observation 1
 - Observation 2
 
-RISK
-- Short sentence about primary risk
-
-ACTION
-- One-line action or watch-level
-
 AGENT CONTEXT:
 - Persona: analytical, conservative and concise. Prioritize clarity over clever
   phrasing. Use short bullet points for observations and one-line risk/action
