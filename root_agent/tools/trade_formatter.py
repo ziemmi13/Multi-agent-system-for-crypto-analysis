@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 from .load_portfolio import load_portfolio 
 
 def format_trade_request(action: str, coin_id: str, symbol: str, quantity: float, entry_price: float,
@@ -21,7 +21,7 @@ def format_trade_request(action: str, coin_id: str, symbol: str, quantity: float
 
     trade = {
         "id": str(uuid.uuid4()),
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "action": action.lower(),
         "asset": {
             "symbol": symbol.lower(),
