@@ -7,6 +7,7 @@ from .sub_agents.business_analyst_2.agent import business_analyst_2
 from .sub_agents.technical_analyst.agent import technical_analyst
 from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
+from .sub_agents.trader.tools.trade import log_policy_rejection
 from .tools.trade_formatter import format_trade_request
 
 root_agent = LlmAgent(
@@ -21,5 +22,6 @@ root_agent = LlmAgent(
         AgentTool(agent=policy_enforcer),
         AgentTool(agent=trader),
         format_trade_request,
+        log_policy_rejection,
         ],
 )

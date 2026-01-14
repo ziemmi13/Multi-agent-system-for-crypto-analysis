@@ -147,7 +147,10 @@ Remember to:
     - STEP 2: Send the `TradeRequest` to `policy_enforcer` agent for validation:
        * Policy Enforcer will check against policies (position sizing, whitelist, stop-loss, daily limits, liquidity, etc.)
        * Wait for policy_enforcer's response: APPROVED, REJECTED, or CONDITIONAL
-       * If REJECTED: Report the violation to the user and do NOT proceed to trader.
+       * If REJECTED: 
+          - Call `log_policy_rejection(trade_request, policy_response=policy_enforcer_response)` to log the rejection to trade_log.txt
+            (The function will automatically extract the rejection reason and violations from the policy response)
+          - Report the violation to the user and do NOT proceed to trader.
        * If CONDITIONAL: Extract adjustments and reformat the request accordingly.
        * If APPROVED: Proceed to STEP 3.
     
