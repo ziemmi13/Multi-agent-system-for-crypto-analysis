@@ -1,0 +1,27 @@
+{
+    "News_channels": {
+        "CoingraphNews": "fast crypto headlines",
+        "cointelegraph": "major crypto news outlet",
+        "news_crypto": "aggregated crypto news",
+        "crypto_nft_web3_news": "NFT/Web3/memecoin news",
+        "WatcherGuru": "breaking news alerts",
+        "bitcoin": "Bitcoin news",
+        "crypto_financial_news": "macro & market news",
+        "solana": "Solana ecosystem news",
+        "coincodecap": "project analytics & dev news",
+        "CoinCodeCap_Classic": "crypto dev/tools updates",
+        "Crypto_NFT_News_Web3_Memecoins": "web3 & memecoin news",
+        "Crypto_Financial_News_Bitcoin_Ethereum": "BTC/ETH financial news",
+        "solana0": "Solana trading chatter",
+        "crypto_signalsf": "crypto news and signals"
+    },
+
+    "Trading_channels": {
+        "crypto_knights": "trading signals",
+        "Binance_Killer_Premium": "trading signals",
+        "Binance_Killers": "trading signals",
+        "BitcoinBullets": "BTC trading signals",
+        "CryptoNinjas_Trading": "trading chat & strategies",
+        "BITCOIN_ETHERUM_SIGNALS": "trading signals"
+    }
+}
