@@ -28,7 +28,7 @@
   "asset_policies": {
     "whitelist": {
       "enabled": true,
-      "assets": ["BTC", "ETH"]
+      "assets": ["BTC", "ETH", "SOL"]
     },
     "blacklist": {
       "enabled": true,

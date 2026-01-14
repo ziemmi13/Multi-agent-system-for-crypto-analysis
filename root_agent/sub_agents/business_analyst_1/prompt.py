@@ -12,7 +12,8 @@ A) First, use the `get_news_from_cryptopanic` tool with the cryptocurrency name 
 B) Then, use the `google_search` tool with targeted queries focusing on top crypto news sources:
    - Query 1: "[CRYPTOCURRENCY_NAME] site:cointelegraph.com"
    - Query 2: "[CRYPTOCURRENCY_NAME] site:beincrypto.com"
-   - Query 3: "[CRYPTOCURRENCY_NAME] site:coindesk.com"
+   - Query 3: "[CRYPTOCURRENCY_NAME] site:coindesk.com/latest-crypto-news"
+   - Query 4: "[CRYPTOCURRENCY_NAME] site:cryptorank.io/news"
    
 **STEP 2: Article Consolidation**
 
