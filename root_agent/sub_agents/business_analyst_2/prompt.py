@@ -47,12 +47,24 @@ PER-MESSAGE PROCESSING:
 2. Analyze message_text sentiment and assign text_sentiment in [-1.0, 1.0] -1 being very negative, 1 being very positive.
 3. Compute reaction_sentiment: weighted average of emoji scores in [-1.0, 1.0].
    [
-      EMOJI SENTIMENT REFERENCE (internal fallback):
-      Positive: ❤️(+1), 👍(+1), 😄(+1), 😃(+1), 😂(+1), 🔥(+1), 🚀(+1), 💎(+1), 📈(+1)
-      Negative: 👎(-1), 😢(-1), 😡(-1), 🤡(-1), 💩(-1), 📉(-1), ⚠️(-1)
-      Neutral: 🤔(0)
-      Ambiguous: 😮(decide between values -1, 0 and 1, based on the context), 
-      Unknown/custom emojis: treat as 0 unless you can infer context.
+      EXTENDED CRYPTO EMOJI MAPPING (internal fallback):
+      
+      // STRONG BULLISH (+1.0)
+      🚀(Rocket), 🌕/🌙(Moon), 💎(Gem/Diamond Hands), 🐂(Bull), 🆙(Up), 🤑(Money mouth), 🎆/🎉(Celebration)
+      
+      // MODERATE BULLISH (+0.5 to +0.8)
+      🔥(Hype/Hot), 📈(Chart Up), 🟢/💚(Green circle/heart), 💰/💸(Money/Profit), 💪(Strength), 🦍(Ape/Buying), 🫡(Respect/HODL), ⚡(Energy/Speed)
+
+      // NEUTRAL / CONTEXT DEPENDENT (0.0 to 0.2)
+      🤔(Thinking), 👀(Watching/Something cooking), 🐳/🐋(Whale - check text if buying or selling), 🐸(Pepe/Meme), 🐕(Doge/Meme), ⚖️(Balance), 📢(Announcement)
+
+      // MODERATE BEARISH (-0.5 to -0.8)
+      📉(Chart Down), 🥀(Wilted flower), ⚠️(Warning), 🧱(Wall/Resistance), 🌧️(Bad weather/market), 🤷(Uncertainty/Doubt)
+
+      // STRONG BEARISH (-1.0)
+      🐻(Bear), 🩸/🔴/💔(Blood/Red/Dump), 👎(Dislike), 😢/😭(Crying/Loss), 😡/🤬(Anger), 🤡(Clown/Scam/Incompetence), 💩(Shitcoin), 💀/☠️(Dead/Rekt), ⚰️(Coffin/RIP), 🚨(Siren/Rugpull Alert), 🤮(Disgust), 🚩(Red Flag)
+
+      Unknown/custom emojis: treat as 0 unless you can infer context from the emoji name or surrounding text.
    ]
 5. Compute combined_score = 0.5*reaction_sentiment + 0.5*text_sentiment.
 6. Label using thresholds:
