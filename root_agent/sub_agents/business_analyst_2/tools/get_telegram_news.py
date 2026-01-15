@@ -10,7 +10,7 @@ import random
 # Load environment variables from root directory
 root_dir = pathlib.Path(__file__).parent.parent.parent.parent
 load_dotenv(root_dir / '.env')
-API_ID = os.getenv('TELEGRAM_API_ID')
+API_ID = int(os.getenv('TELEGRAM_API_ID'))
 API_HASH = os.getenv('TELEGRAM_API_HASH')
 SESSION_STRING = os.getenv('TELEGRAM_SESSION_STRING')
 
@@ -53,22 +53,17 @@ async def get_channel_news(channel_handle, client, limit=5):
             views = msg.views
             forwards = msg.forwards
             reactions = parse_message_reactions(msg.reactions)
+            comments = []
+            if msg.replies and msg.replies.replies > 0: # msg.replies.replies is just the number of replies
+                async for comment in client.iter_messages(channel_handle, reply_to=msg.id, limit=5):
+                    if comment.text:
+                        comments.append(comment.text) 
 
             news_item = (
-                f"Date: {date}\n",
-                f"Message: {message}\n",
-                f"Views: {views}, Forwards: {forwards}, Reactions: {reactions}\n"
+                f"Date: {date}\n"
+                f"Message: {message}\n"
+                f"Views: {views}, Forwards: {forwards}, Reactions: {reactions}, Comments: {comments}\n"
             )
-            
-            # Get comments/replies to this message
-            comments_text = ""
-            # async for comment in client.iter_messages(channel_handle, reply_to=id):
-            #     comments_text += f"  - {comment.message}\n"
-            
-            if comments_text:
-                news_item = "".join(news_item) + f"Comments:\n{comments_text}"
-            else:
-                news_item = "".join(news_item)
             
             news_items.append(news_item)
 

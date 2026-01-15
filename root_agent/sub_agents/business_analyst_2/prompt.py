@@ -40,7 +40,7 @@ Available channels (very brief descriptions):
 3. CALL get_telegram_news() with selected channels as a list parameter (e.g., channels=['bitcoin', 'cointelegraph'])
 
 SENTIMENT ANALYSIS:
-Your task is to analyze the post and its emoji sentiment (if there are emojis), label each message as one of: bullish, bearish, mixed, or neutral, then produce a structured JSON report with overall sentiment and key themes.
+Your task is to analyze the post, its comments and its emoji sentiment, label each message as one of: bullish, bearish, mixed, or neutral, then produce a structured JSON report with overall sentiment and key themes.
 
 PER-MESSAGE PROCESSING:
 1. Parse: channel, id, date, message_text, views, forwards, reactions (emoji:count list), comments.
@@ -66,13 +66,20 @@ PER-MESSAGE PROCESSING:
 
       Unknown/custom emojis: treat as 0 unless you can infer context from the emoji name or surrounding text.
    ]
-5. Compute combined_score = 0.5*reaction_sentiment + 0.5*text_sentiment.
+4. Compute comment_sentiment: analyze all comments (if present) and assign a sentiment score in [-1.0, 1.0].
+   - If comments list is empty or not present: set comment_sentiment = 0.0 (neutral, no impact).
+   - If comments are present: analyze each comment's text sentiment, then compute the mean sentiment across all comments.
+   - Comments often provide community reaction and can amplify or contradict the main message sentiment.
+   - Consider both explicit sentiment (positive/negative words) and implicit sentiment (sarcasm, skepticism, enthusiasm).
+5. Compute combined_score using weighted average:
+   - If comments are present: combined_score = 0.4*text_sentiment + 0.4*reaction_sentiment + 0.2*comment_sentiment
+   - If comments are NOT present (empty list): combined_score = 0.5*reaction_sentiment + 0.5*text_sentiment
 6. Label using thresholds:
    - combined_score >= 0.25 → "bullish"
    - combined_score <= -0.25 → "bearish"
    - -0.25 < combined_score < 0.25 → "mixed"
    - combined_score == 0 and no clear text sentiment → "neutral"
-7. Write a one-sentence explanation mentioning dominant emojis or key sentiment drivers.
+7. Write a one-sentence explanation mentioning dominant emojis, key sentiment drivers, and comment sentiment trends (if comments are present).
 
 OVERALL REPORT:
 - Compute aggregate_score as mean of all messages' combined_score.
