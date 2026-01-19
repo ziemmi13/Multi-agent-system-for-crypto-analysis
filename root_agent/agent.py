@@ -11,21 +11,32 @@ from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
 from .sub_agents.trader.tools.trade import log_policy_rejection
 from .tools.trade_formatter import format_trade_request
+from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio
 from dotenv import load_dotenv
 import pathlib
 import os
+import tiktoken
 
 # Load environment variables 
 root_dir = pathlib.Path(__file__).parent
 load_dotenv(root_dir / '.env')
 
+# Encoding
+encoding = tiktoken.encoding_for_model('gpt-4.1')
+
 # Models
 gemini_model = 'gemini-2.5-flash'
-open_ai_model = model=LiteLlm('openai/gpt-4.1',
-                  api_key=os.getenv("OPENAI_API_KEY"))
+open_ai_model = LiteLlm(model='openai/gpt-4.1',
+                  api_key=os.getenv("OPENAI_API_KEY"),
+                  logit_bias={
+                          encoding.encode("buy")[0]: 5,
+                          encoding.encode("sell")[0]: 5,
+                          encoding.encode("hold")[0]: -10,
+                    }  
+                  )
 
 root_agent = LlmAgent(
-    model=open_ai_model,
+    model=gemini_model,
     name='root_agent',
     description='Oversees business and technical cryptocurrencies analysts.',
     instruction=prompt.ROOT_AGENT_PROMPT,
@@ -37,5 +48,6 @@ root_agent = LlmAgent(
         AgentTool(agent=trader),
         format_trade_request,
         log_policy_rejection,
+        load_portfolio
         ],
 )
