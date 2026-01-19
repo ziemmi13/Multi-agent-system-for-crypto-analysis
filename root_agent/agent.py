@@ -11,7 +11,6 @@ from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
 from .sub_agents.trader.tools.trade import log_policy_rejection
 from .tools.trade_formatter import format_trade_request
-from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio
 from dotenv import load_dotenv
 import pathlib
 import os
@@ -48,6 +47,5 @@ root_agent = LlmAgent(
         AgentTool(agent=trader),
         format_trade_request,
         log_policy_rejection,
-        load_portfolio
         ],
 )

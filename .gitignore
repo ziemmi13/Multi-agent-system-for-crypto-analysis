@@ -8,3 +8,7 @@ venv/
 
 # Pycache files
 __pycache__/
+
+# Database files
+creating_database/
+database/

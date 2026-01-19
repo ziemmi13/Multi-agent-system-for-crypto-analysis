@@ -1,7 +1,7 @@
 import json
 import os
 
-def load_policy(policy_type="safe"):
+def load_policy(policy_type="aggressive"):
     """Load a policy JSON file from the tools directory."""
     tools_dir = os.path.dirname(__file__)
     policy_path = os.path.join(tools_dir, f"policy_{policy_type}.json")
