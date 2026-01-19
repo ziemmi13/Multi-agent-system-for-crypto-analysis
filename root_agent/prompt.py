@@ -31,12 +31,14 @@ Based on Phase 2 and the Portfolio Context from Phase 1, determine your stance:
 **PHASE 4: EXECUTION & POLICY PROTOCOL**
 * **IF HOLD:** Use trader tool `log_trade` to record the decision. No further action needed.
 * **IF BUY/SELL:**
-    1.  Construct a `TradeRequest` using the `format_trade_request` tool.
-    2.  **CRITICAL:** Send this request to the `policy_enforcer` agent first.
-    3.  Wait for response:
-        * *APPROVED:* Forward the exact request to the `trader` agent for execution.
-        * *CONDITIONAL:* Apply fixes (e.g., lower quantity) and send to `trader`.
-        * *REJECTED:* Log the rejection via `log_policy_rejection`. Do not contact `trader`.
+    1.  **ALWAYS FIRST:** Call the `format_trade_request` tool to construct a `TradeRequest` object with all necessary parameters (action, coin_id, symbol, quantity, entry_price, target_exit_price, stop_loss_price, order_type, rationale).
+    2.  **CRITICAL - ONLY AFTER STEP 1:** Send this TradeRequest object to the `policy_enforcer` agent for validation.
+    3.  Wait for policy_enforcer's response:
+        * *APPROVED:* Forward the exact TradeRequest to the `trader` agent for execution.
+        * *CONDITIONAL:* Apply any adjustments suggested and resubmit to `trader`.
+        * *REJECTED:* Call `log_policy_rejection` with the TradeRequest and policy response. Do NOT proceed to trader.
+    
+    **⚠️ MANDATORY SEQUENCE:** format_trade_request → policy_enforcer → trader. NEVER skip format_trade_request or call policy_enforcer directly with unformatted trade data.
 
 ---
 

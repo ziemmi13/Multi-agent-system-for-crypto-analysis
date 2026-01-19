@@ -31,11 +31,11 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
         else:
             technical_data[key] = {"error": f"Failed to fetch data from {url}"}
         
-    formated_techinical_data = format_techinical_data(technical_data, symbol)
+    formated_techinical_data = format_technical_data(technical_data, symbol)
     
     return formated_techinical_data
 
-def format_techinical_data(technical_data: Dict[str, Any], symbol: str) -> str:
+def format_technical_data(technical_data: Dict[str, Any], symbol: str) -> str:
     """Formats the technical data into a readable string.
     Args:
         technical_data (Dict[str, Any]): The technical data dictionary.
