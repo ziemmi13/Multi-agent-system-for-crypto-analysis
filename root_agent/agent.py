@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
 from google.adk.tools.agent_tool import AgentTool
+from google.genai.types import GenerateContentConfig
 # for external LLM providers
 from google.adk.models.lite_llm import LiteLlm
 
@@ -23,7 +24,27 @@ load_dotenv(root_dir / '.env')
 # Encoding
 encoding = tiktoken.encoding_for_model('gpt-4.1')
 
+# Generation config
+generation_config = {
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "top_k": 40,       
+    "max_output_tokens": 5000,
+}
+
 # Models
+my_config = GenerateContentConfig(
+    temperature=0,
+    top_k=20,
+    top_p=0.95,
+    # max_output_tokens=1000,
+    presence_penalty=0.0,
+    frequency_penalty=0.0,
+    # stop_sequences=["STOP!"],
+    # response_mime_type="application/json", # This will cause an error if agent uses tools
+    candidate_count=1,
+)
+
 gemini_model = 'gemini-2.5-flash'
 open_ai_model = LiteLlm(model='openai/gpt-4.1',
                   api_key=os.getenv("OPENAI_API_KEY"),
@@ -32,7 +53,7 @@ open_ai_model = LiteLlm(model='openai/gpt-4.1',
                           encoding.encode("sell")[0]: 5,
                           encoding.encode("hold")[0]: -10,
                     }  
-                  )
+                  ) # For now the openai model doesn't work with tools
 
 root_agent = LlmAgent(
     model=gemini_model,
@@ -48,4 +69,5 @@ root_agent = LlmAgent(
         format_trade_request,
         log_policy_rejection,
         ],
+    generate_content_config=my_config,
 )
