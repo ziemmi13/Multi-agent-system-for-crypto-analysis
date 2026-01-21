@@ -28,7 +28,15 @@ BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET")
 client = Client(BINANCE_API_KEY, BINANCE_API_SECRET, testnet=True)
 
 def get_batch_prices(coin_ids_list, currency="usd"):
-    # Join IDs with commas: "bitcoin,ethereum,solana"
+    """Fetches current prices for a list of CoinGecko IDs in the specified currency.
+    Args:
+        coin_ids_list (list): List of CoinGecko coin IDs.
+        currency (str): The fiat currency to get prices in (default is 'usd').
+    
+    Returns:
+        dict: A dictionary mapping coin IDs to their prices.
+    """
+    
     ids_string = ",".join(coin_ids_list)
     
     endpoint = f"https://api.coingecko.com/api/v3/simple/price"
