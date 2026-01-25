@@ -11,7 +11,7 @@ from .sub_agents.technical_analyst.agent import technical_analyst
 from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
 from .sub_agents.trader.tools.trade import log_policy_rejection
-from .tools.trade_formatter import format_trade_request
+from .tools.trade_request_formatter import format_trade_request
 from dotenv import load_dotenv
 import pathlib
 import os

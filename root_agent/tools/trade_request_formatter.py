@@ -4,8 +4,7 @@ from datetime import datetime, UTC
 from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio 
 
 def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float,
-                         target_exit_price: float, stop_loss_price: float,
-                         order_type: str, currency: str = "usd", rationale: str = ""):
+                         stop_price: float, order_type: str, currency: str = "usd", rationale: str = ""):
     """Create a `TradeRequest` dict matching the agreed schema.
 
     Fields:
@@ -33,8 +32,7 @@ def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symb
             "quantity": quantity if quantity is not None else 0,
             "position_size_percent": position_size_percent if position_size_percent is not None else 0,
             "entry_price": entry_price,
-            "target_exit_price": target_exit_price,
-            "stop_loss_price": stop_loss_price,
+            "stop_price": stop_price,
             "order_type": order_type
         },
         "rationale": rationale,

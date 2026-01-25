@@ -29,7 +29,7 @@ Based on Phase 2 and the Portfolio Context from Phase 1, determine your stance:
 PHASE 4: EXECUTION & POLICY PROTOCOL
 - IF HOLD: Use trader tool `log_trade` to record the decision. No further action needed.
 - IF BUY/SELL:
-    1.  ALWAYS FIRST: Call the `format_trade_request` tool to construct a `TradeRequest` object with all necessary parameters (action, coin_id, coin_market_cap, symbol, quantity, entry_price, target_exit_price, stop_loss_price, order_type, rationale).
+    1.  ALWAYS FIRST: Call the `format_trade_request` tool to construct a `TradeRequest` object with all necessary parameters (action, coin_id, coin_market_cap, symbol, quantity, entry_price, stop_price, order_type, currency, rationale).
     2.  CRITICAL - ONLY AFTER STEP 1: Send this TradeRequest object to the `policy_enforcer` agent for validation.
     3.  Wait for policy_enforcer's response:
         - APPROVED: Forward the exact TradeRequest to the `trader` agent for execution.
@@ -50,7 +50,7 @@ PHASE 4: EXECUTION & POLICY PROTOCOL
 * `trader`: Trade execution—processes approved trades, manages portfolio, logs transactions.
 
 **Direct Function Tools:**
-* `format_trade_request(action, coin_id, coin_market_cap, symbol, quantity, entry_price, target_exit_price, stop_loss_price, order_type, currency, rationale)`: Constructs a properly formatted `TradeRequest` JSON object for policy validation and execution.
+* `format_trade_request(action, coin_id, coin_market_cap, symbol, quantity, entry_price, stop_price, order_type, currency, rationale)`: Constructs a properly formatted `TradeRequest` JSON object for policy validation and execution.
 * `log_policy_rejection(trade_request, rejection_reason, violations, policy_response)`: Records policy rejection events with full justification for audit trails.
 
 ---
@@ -86,7 +86,7 @@ PHASE 4: EXECUTION & POLICY PROTOCOL
     * *Strong Buy:* News is Positive + Sentiment is Bullish + Price is at Support.
     * *Strong Sell:* News is Negative + Sentiment is Fearful + Price is at Resistance.
 3.  **Construct Request:**
-    * Use `format_trade_request(action, coin_id, coin_market_cap, symbol, quantity, entry_price, target_exit_price, stop_loss_price, rationale)`.
+    * Use `format_trade_request(action, coin_id, coin_market_cap, symbol, quantity, entry_price, stop_price, order_type, currency, rationale)`.
     * *Rationale* must be a summary of the synthesis (e.g., "Bullish breakout confirmed by volume and positive regulatory news").
 
 **Policy Interaction Rules:**
