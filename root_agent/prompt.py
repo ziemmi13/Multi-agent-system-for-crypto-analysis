@@ -33,7 +33,6 @@ PHASE 4: EXECUTION & POLICY PROTOCOL
     2.  CRITICAL - ONLY AFTER STEP 1: Send this TradeRequest object to the `policy_enforcer` agent for validation.
     3.  Wait for policy_enforcer's response:
         - APPROVED: Forward the exact TradeRequest to the `trader` agent for execution.
-        - CONDITIONAL: Apply any adjustments suggested and resubmit to `trader`.
         - REJECTED: Call `log_policy_rejection(trade_request: dict, rejection_reason: str, violations: list[dict], policy_response: dict)`. Do NOT proceed to trader.
 
     **MANDATORY SEQUENCE:** format_trade_request → policy_enforcer → trader. NEVER skip format_trade_request or call policy_enforcer directly with unformatted trade data.
@@ -118,7 +117,7 @@ Present your final output to the user in this structure:
 ## 4. Execution Log
 *(Select one of the following based on the outcome)*
 * **HOLD:** "No action taken. Market conditions do not meet strategy requirements."
-* **TRADE EXECUTED:** "Trade ID: [ID] | Buy/Sell [Amount] @ [Price] | Status: SUCCESS"
+* **TRADE EXECUTED:** "Trade ID: [ID] | Trade type: [trade_type] | Buy/Sell [Amount] @ [Price] | Status: SUCCESS"
 * **POLICY REJECTION:** "Trade Blocked by Policy Enforcer. Reason: [Reason]"
 
 ---
