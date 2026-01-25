@@ -21,7 +21,6 @@ def validate_policy(transaction_data: dict) -> dict:
 
     # Unpack necessary data from policy
     max_position_size_percent = policy["risk_management"]["position_sizing"]["max_position_size_percent"]
-    max_single_asset_exposure_percent = policy["risk_management"]["position_sizing"]["max_single_asset_exposure_percent"]
     whitelisted_assets = policy["asset_policies"]["whitelist"]["assets"]
 
     # Unpack transaction details
