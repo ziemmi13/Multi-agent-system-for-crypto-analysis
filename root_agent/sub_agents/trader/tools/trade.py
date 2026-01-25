@@ -1,7 +1,9 @@
+from locale import currency
 import requests
 from datetime import datetime, UTC
 import os
 import json
+from .portfolio_manager import make_trade
 
 COINGECKO_ENDPOINT = "https://api.coingecko.com/api/v3"
 
@@ -22,33 +24,28 @@ def get_current_price(coin_id: str, currency: str = "usd"):
     except:
         return None
 
-def make_a_trade(action: str, coin_id: str, symbol: str,  currency: str = "usd"):
-    """Execute or record a trading instruction.
-    Returns a dict with a summary or an error message.
+def log_trade(action: str, coin_id: str, symbol: str, currency: str = "usd"):
+    """Logs the trade action to a local file with a timestamp.
+    Args:
+        action (str): The trade action ('buy', 'sell', or 'hold').
+        coin_id (str): The CoinGecko ID of the cryptocurrency (e.g., 'bitcoin').
+        symbol (str): The symbol of the cryptocurrency (e.g., 'btc').
+        currency (str): The currency in which the price is denominated.
+        action (str): The trade action ('buy', 'sell', or 'hold').
     """
     action_l = action.lower() if isinstance(action, str) else ""
     if action_l not in ("buy", "sell", "hold"):
         return {"error": "Unsupported action. Use 'buy', 'sell', or 'hold'."}
-
+    
     price = get_current_price(coin_id, currency)
 
-    log_trade(coin_id, symbol, price if price is not None else 0.0, currency, action_l)
-    return {"action": action_l, "coin": coin_id, "symbol": symbol, "price": price if price is not None else 0.0}
-
-def log_trade(coin_id: str, symbol: str, price: float, currency: str, action: str):
-    """Logs the trade action to a local file with a timestamp.
-    Args:
-        coin_id (str): The CoinGecko ID of the cryptocurrency (e.g., 'bitcoin').
-        symbol (str): The symbol of the cryptocurrency (e.g., 'btc').
-        price (float): The price at which the trade was made.
-        currency (str): The currency in which the price is denominated.
-        action (str): The trade action ('buy', 'sell', or 'hold').
-    """
     price_str = price if price is not None else "N/A"
     log_entry = f"{datetime.now(UTC).isoformat().replace("+00:00", "Z")} - {action.upper()} - {coin_id} ({symbol}) at {price_str} {currency}\n"
     log_file_path = os.path.join(os.path.dirname(__file__), "trade_log.txt")
     with open(log_file_path, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
+    
+    return {"status": "logged", "message": f"Trade action '{action}' for {symbol} logged at price {price_str} {currency}."}
 
 
 def log_policy_rejection(trade_request: dict, rejection_reason: str, violations: list[dict], policy_response: dict):
@@ -107,9 +104,11 @@ def log_policy_rejection(trade_request: dict, rejection_reason: str, violations:
 def process_trade_request(trade_request: dict) -> dict:
     """Process a structured TradeRequest (dict).
 
-    Accepts either a dict following the TradeRequest contract or a JSON string.
-    Executes or logs the trade using existing helpers and appends the full request
-    and execution result to `trade_log.txt` for auditing.
+    Accepts a dict following the TradeRequest contract.
+    For BUY/SELL: Calls make_trade() from portfolio_manager to execute on Binance,
+                  then calls log_trade() if the trade actually executes.
+    For HOLD:     Only logs the hold action without executing any trade.
+    Appends the full request and execution result to `trade_log.txt` for auditing.
     Returns a dict: {"trade_request": {...}, "execution": {...}} or an error dict.
     """
     # Expect a dict (the agent runtime will pass parsed JSON as a dict).
@@ -120,28 +119,43 @@ def process_trade_request(trade_request: dict) -> dict:
     action = trade_request.get("action", "").lower()
     asset = trade_request.get("asset", {})
     position = trade_request.get("position", {})
+    order_type = position.get("order_type", "MARKET").upper()
+    entry_price = position.get("entry_price", 0.0)
 
     coin_id = asset.get("coin_id")
     symbol = asset.get("symbol")
     currency = asset.get("currency", "usd")
 
-    if action not in ("buy", "sell", "hold"):
-        return {"error": "Invalid action in trade_request"}
-    if not coin_id or not symbol:
-        return {"error": "asset.coin_id and asset.symbol are required"}
-
     execution = None
     try:
         if action == "hold":
-            # Use make_a_trade to fetch price & log hold
-            exec_res = make_a_trade("hold", coin_id, symbol, currency)
-            execution = {"status": "logged_hold", "result": exec_res}
-        else:
-            exec_res = make_a_trade(action, coin_id, symbol, currency)
-            if exec_res.get("error"):
-                execution = {"status": "error", "result": exec_res}
-            else:
-                execution = {"status": "executed", "result": exec_res}
+            log_res = log_trade(action, coin_id, symbol, currency)
+            execution = {"status": "logged_hold", "result": log_res}
+        else: # BUY or SELL
+            binance_symbol = f"{symbol.upper()}USDT"
+            side = "BUY" if action == "buy" else "SELL"
+            
+            # Get quantity from position 
+            quantity = position.get("quantity", 0.001)
+            
+            # Execute the trade using make_trade from portfolio_manager
+            try:
+                trade_result = make_trade(symbol=binance_symbol,
+                                          side=side,
+                                          quantity=quantity,
+                                          order_type=order_type,
+                                          price=entry_price,
+                                          stop_price=position.get("stop_price", 0.0),
+                                          time_in_force="GTC")
+                
+                # If trade executed successfully, log it
+                if trade_result and not trade_result.get("error"):
+                    log_res = log_trade(action, coin_id, symbol, currency)
+                    execution = {"status": "executed", "result": {"trade": trade_result, "log": log_res}}
+                else:
+                    execution = {"status": "error", "result": trade_result}
+            except Exception as e:
+                execution = {"status": "error", "result": f"Trade execution failed: {str(e)}"}
     except Exception as e:
         execution = {"status": "error", "result": str(e)}
 
@@ -155,17 +169,3 @@ def process_trade_request(trade_request: dict) -> dict:
         pass
 
     return {"trade_request": trade_request, "execution": execution}
-
-
-def process_trade_request_json(trade_request_json: str) -> dict:
-    """Wrapper that accepts a JSON string, parses it, and calls `process_trade_request`.
-
-    Useful for tool APIs that prefer a single-string parameter.
-    """
-    try:
-        payload = json.loads(trade_request_json)
-    except Exception as e:
-        return {"error": f"Invalid JSON: {e}"}
-
-    return process_trade_request(payload)
-    

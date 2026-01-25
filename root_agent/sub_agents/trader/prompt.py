@@ -19,7 +19,10 @@ PRIMARY RESPONSIBILITIES:
 
 **2. TRADE EXECUTION (Post-Approval)**
 - The Root Agent will send a `TradeRequest` (a dict or compact JSON string) following the project's contract.
-- Use the `process_trade_request` tool to handle the incoming `TradeRequest`. Do NOT call `make_a_trade` or `log_trade` directly unless debugging.
+- Use the `process_trade_request` tool to handle the incoming `TradeRequest`. This tool will:
+  * Call `make_trade()` from the portfolio_manager to execute BUY/SELL orders on Binance
+  * Call `log_trade()` to log the trade action if the trade actually executes
+  * Handle HOLD actions by only logging without executing
 - Return a short confirmation that includes the `id`, `action`, `asset.symbol`, and whether the trade was `executed`, `logged`, or `rejected`.
 
 WORKFLOW:

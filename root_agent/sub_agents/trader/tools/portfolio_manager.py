@@ -6,7 +6,7 @@ import requests
 
 # 1. Setup
 ALLOWED_ASSETS = {
-    'USD': 'usd', 
+    'USDT': 'usd', 
     'BNB': 'binancecoin', 
     'BTC': 'bitcoin', 
     'ETH': 'ethereum', 
@@ -57,6 +57,14 @@ def get_batch_prices(coin_ids_list, currency="usd"):
         return {}
 
 def load_portfolio():
+    """
+    Loads and evaluates the user's portfolio from Binance.
+    
+    Returns:
+        dict: A dictionary with asset details and their USD values.
+        float: Total portfolio value in USD.
+    """
+    
     account_info = client.get_account()
     balances = account_info.get("balances", [])
     
@@ -81,7 +89,7 @@ def load_portfolio():
                 "value_usd": 0.0
             }
             
-            if asset == 'USD':
+            if asset == 'USDT':
                 portfolio_assets[asset]["price_usd"] = 1.0
                 portfolio_assets[asset]["value_usd"] = total
             else:
@@ -92,7 +100,7 @@ def load_portfolio():
         prices_data = get_batch_prices(ids_to_fetch)
         
         for asset, data in portfolio_assets.items():
-            if asset == 'USD': 
+            if asset == 'USDT': 
                 continue # Already handled
             
             cg_id = ALLOWED_ASSETS.get(asset)
@@ -104,11 +112,49 @@ def load_portfolio():
             else:
                 print(f"Warning: No price found for {asset} ({cg_id})")
     
-    # Calculate total portfolio value in USD
+    # Calculate total portfolio value in USDT
     for asset, data in portfolio_assets.items():
         full_portfolio_value_usd += data["value_usd"]
 
     return portfolio_assets, full_portfolio_value_usd
 
-def make_trade():
-    pass
+def make_trade(symbol: str, side: str, quantity: float, order_type: str, 
+               price: float, stop_price: float, time_in_force: str):
+    """
+    Places a trade order on Binance.
+    Args:
+        symbol (str): Trading pair symbol (e.g., 'BTCUSDT').
+        side (str): 'BUY' or 'SELL'.
+        quantity (float): Amount to buy/sell.
+        order_type (str): Type of order ('MARKET', 'LIMIT', 'STOP_LOSS', etc.).
+        price (float, optional): Price for LIMIT orders.
+        stop_price (float, optional): Stop price for STOP_LOSS/TAKE_PROFIT orders.
+        time_in_force (str, optional): Time in force for LIMIT orders ('GTC', 'IOC', etc.)."""
+    
+    order_type = order_type.upper()
+    side = side.upper()
+    
+    params = {
+        "symbol": symbol,
+        "side": side,
+        "type": order_type,
+        "quantity": quantity
+    }
+    
+    if order_type == "MARKET":
+        pass # No need for extra params
+
+    elif order_type == "LIMIT":
+        params["price"] = str(price)
+        params["timeInForce"] = time_in_force
+
+    elif order_type in ["STOP_LOSS", "TAKE_PROFIT"]:
+        params["stopPrice"] = str(stop_price)
+
+    # Execute the order
+    try:
+        order = client.create_order(**params)
+        return order
+    except Exception as e:
+        print(f"Error placing order: {e}")
+        return None
