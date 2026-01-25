@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, UTC
 from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio 
 
-def format_trade_request(action: str, coin_id: str, symbol: str, quantity: float, entry_price: float,
+def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float,
                          target_exit_price: float, stop_loss_price: float,
                          order_type: str, currency: str = "usd", rationale: str = ""):
     """Create a `TradeRequest` dict matching the agreed schema.
@@ -25,6 +25,7 @@ def format_trade_request(action: str, coin_id: str, symbol: str, quantity: float
         "asset": {
             "symbol": symbol.lower(),
             "coin_id": coin_id.lower(),
+            "coin_market_cap": coin_market_cap,
             "current_price_usd": entry_price if entry_price is not None else 0.0,
             "currency": currency.lower()
         },
