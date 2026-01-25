@@ -1,8 +1,10 @@
 from google.adk.agents import LlmAgent
 from google.adk.tools.agent_tool import AgentTool
 from google.genai.types import GenerateContentConfig
+from google.genai import types
 # for external LLM providers
 from google.adk.models.lite_llm import LiteLlm
+
 
 from . import prompt
 from .sub_agents.business_analyst_1.agent import business_analyst_1
@@ -59,7 +61,8 @@ root_agent = LlmAgent(
     model=gemini_model,
     name='root_agent',
     description='Oversees business and technical cryptocurrencies analysts.',
-    instruction=prompt.ROOT_AGENT_PROMPT,
+    static_instruction=types.Content(role="system", parts=[types.Part(text=prompt.ROOT_AGENT_PROMPT)]),
+    # instruction="BTC",
     tools=[
         AgentTool(agent=business_analyst_1), 
         AgentTool(agent=business_analyst_2),
