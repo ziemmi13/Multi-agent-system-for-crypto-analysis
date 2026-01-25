@@ -20,7 +20,7 @@ def get_current_price(coin_id: str, currency: str = "usd"):
         response = requests.get(current_price_endpoint, timeout=5)
         response.raise_for_status()
         data = response.json()
-        return data.get(coin_id, {}).get(currency)
+        return data.get(coin_id, {}).get(currency, None)
     except:
         return None
 
@@ -127,37 +127,34 @@ def process_trade_request(trade_request: dict) -> dict:
     currency = asset.get("currency", "usd")
 
     execution = None
-    try:
-        if action == "hold":
-            log_res = log_trade(action, coin_id, symbol, currency)
-            execution = {"status": "logged_hold", "result": log_res}
-        else: # BUY or SELL
-            binance_symbol = f"{symbol.upper()}USDT"
-            side = "BUY" if action == "buy" else "SELL"
+    if action == "hold":
+        log_res = log_trade(action, coin_id, symbol, currency)
+        execution = {"status": "logged_hold", "result": log_res}
+    else: # BUY or SELL
+        binance_symbol = f"{symbol.upper()}USDT"
+        side = "BUY" if action == "buy" else "SELL"
+        
+        # Get quantity from position 
+        quantity = position.get("quantity", 0.001)
+        
+        # Execute the trade using make_trade from portfolio_manager
+        try:
+            trade_result = make_trade(symbol=binance_symbol,
+                                        side=side,
+                                        quantity=quantity,
+                                        order_type=order_type,
+                                        price=entry_price,
+                                        stop_price=position.get("stop_price", 0.0),
+                                        time_in_force="GTC")
             
-            # Get quantity from position 
-            quantity = position.get("quantity", 0.001)
-            
-            # Execute the trade using make_trade from portfolio_manager
-            try:
-                trade_result = make_trade(symbol=binance_symbol,
-                                          side=side,
-                                          quantity=quantity,
-                                          order_type=order_type,
-                                          price=entry_price,
-                                          stop_price=position.get("stop_price", 0.0),
-                                          time_in_force="GTC")
-                
-                # If trade executed successfully, log it
-                if trade_result and not trade_result.get("error"):
-                    log_res = log_trade(action, coin_id, symbol, currency)
-                    execution = {"status": "executed", "result": {"trade": trade_result, "log": log_res}}
-                else:
-                    execution = {"status": "error", "result": trade_result}
-            except Exception as e:
-                execution = {"status": "error", "result": f"Trade execution failed: {str(e)}"}
-    except Exception as e:
-        execution = {"status": "error", "result": str(e)}
+            # If trade executed successfully, log it
+            if trade_result and not trade_result.get("error"):
+                log_res = log_trade(action, coin_id, symbol, currency)
+                execution = {"status": "executed", "result": {"trade": trade_result, "log": log_res}}
+            else:
+                execution = {"status": "error", "result": trade_result}
+        except Exception as e:
+            execution = {"status": "error", "result": f"Trade execution failed: {str(e)}"}
 
     # Append audit log with the full request and execution result
     try:
