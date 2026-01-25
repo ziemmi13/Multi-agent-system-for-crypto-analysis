@@ -1,10 +1,4 @@
 {
-  "metadata": {
-    "created_date": "2026-01-07",
-    "last_updated": "2026-01-07",
-    "description": "Aggressive trading policy"
-  },
-
   "risk_management": {
     "position_sizing": {
       "max_position_size_percent": 35.0,
@@ -16,43 +10,24 @@
     },
     "stop_loss": {
       "required": false,
-      "default_percent": 10.0,
       "min_percent": 2.0
     },
     "take_profit": {
-      "required": false,
-      "suggested_percent": 20.0
+      "required": false
     }
   },
 
   "asset_policies": {
     "whitelist": {
-      "enabled": false,
-      "assets": []
+      "assets": ["BTC", "ETH", "SOL", "XRP", "BNB", "LTC", "TRX", "ADA", "DOGE", "PEPE"]
     },
-    "blacklist": {
-      "enabled": true,
-      "assets": [],
-      "reason": "High volatility or regulatory concerns"
-    },
-    "restricted_asset_types": [],
     "minimum_market_cap_usd": 100000000
   },
 
   "trading_rules": {
-    "allowed_order_types": ["limit", "market", "stop_loss"],
+    "allowed_order_types": ["market", "limit", "stop_loss", "take_profit"],
     "restricted_order_types": [],
-    "market_conditions": {
-      "trading_halted_if_volatility_percent": 50.0,
-      "trading_halted_if_spread_percent": 10.0
-    },
-    "minimum_liquidity_usd": 1000000,
-    "minimum_holding_period_minutes": 1
-  },
-
-  "fees_and_costs": {
-    "max_acceptable_fee_percent": 2.0,
-    "slippage_tolerance_percent": 1.5,
-    "expected_annual_cost_percent": 5.0
+    "trading_halted_if_volatility_percent": 50.0,
+    "minimum_liquidity_usd": 1000000
   }
 }

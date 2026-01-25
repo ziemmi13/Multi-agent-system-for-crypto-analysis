@@ -1,5 +1,4 @@
 from .policy_loading import load_policy
-import json
 
 def validate_policy(transaction_data: dict) -> dict:
     """
@@ -9,13 +8,14 @@ def validate_policy(transaction_data: dict) -> dict:
     transaction_data (dict): A dictionary containing transaction details.
 
     Returns:
+        dict: A dictionary with validation results, including status and reasons.
     """
 
     # In case of HOLD, skip risk validation
     if transaction_data["action"].lower() == "hold":
         return {"status": "approved", "reason": "Hold action requires no risk validation."}
     
-    policy = load_policy(policy_type="safe")
+    policy = load_policy(policy_type="aggressive")
 
     # Unpack necessary data from policy
     max_position_size_percent = policy["risk_management"]["position_sizing"]["max_position_size_percent"]
@@ -44,7 +44,7 @@ def validate_policy(transaction_data: dict) -> dict:
         }
     
     # Validation 2: Check if asset is whitelisted
-    if policy["asset_policies"]["whitelist"]["enabled"]:
+    if policy["asset_policies"]["whitelist"]:
         if coin_symbol.upper() not in [a.upper() for a in whitelisted_assets]:
             return {
                 "status": "rejected",
@@ -63,7 +63,7 @@ def validate_policy(transaction_data: dict) -> dict:
                 "field": "stop_loss_price",
                 "actual": stop_loss_price
             }
-    
+        
     # If all validations pass
     return {
         "status": "approved",

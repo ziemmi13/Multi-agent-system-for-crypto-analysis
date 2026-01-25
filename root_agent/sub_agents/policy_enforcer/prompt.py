@@ -13,7 +13,7 @@ WORKFLOW:
 
 2. Validate the request using the `validate_policy` tool, which checks:
    - Position sizing constraints
-   - Asset whitelist/blacklist
+   - Asset whitelist
    - Stop-loss requirements
    - Daily loss limits
    - Order type restrictions
