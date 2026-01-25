@@ -9,7 +9,7 @@ Follow these steps carefully:
 
 A) First, use the `get_news_from_cryptopanic` tool with the cryptocurrency name to get trending news from CryptoPanic. This gives you high-engagement, verified crypto news.
 
-B) Then, use the `google_search` tool with targeted queries focusing on top crypto news sources:
+B) Then, use the `google_search` tool from Google ADK library with targeted queries focusing on top crypto news sources:
    - Query 1: "[CRYPTOCURRENCY_NAME] site:cointelegraph.com"
    - Query 2: "[CRYPTOCURRENCY_NAME] site:beincrypto.com"
    - Query 3: "[CRYPTOCURRENCY_NAME] site:coindesk.com/latest-crypto-news"
