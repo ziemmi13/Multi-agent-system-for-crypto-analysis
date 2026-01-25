@@ -1,3 +1,4 @@
+from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio
 from .policy_loading import load_policy
 
 def validate_policy(transaction_data: dict) -> dict:
@@ -16,6 +17,7 @@ def validate_policy(transaction_data: dict) -> dict:
         return {"status": "approved", "reason": "Hold action requires no risk validation."}
     
     policy = load_policy(policy_type="aggressive")
+    portfolio_assets, full_portfolio_value_usd  = load_portfolio()
 
     # Unpack necessary data from policy
     max_position_size_percent = policy["risk_management"]["position_sizing"]["max_position_size_percent"]
@@ -32,7 +34,9 @@ def validate_policy(transaction_data: dict) -> dict:
     target_exit_price = transaction_data.get("position", {}).get("target_exit_price", None)
     stop_loss_price = transaction_data.get("position", {}).get("stop_loss_price", None)
     order_type = transaction_data.get("position", {}).get("order_type", "").lower()
+    coin_market_cap = transaction_data.get("asset", {}).get("coin_market_cap", 0.0)
 
+    ## Risk management Validations ##
     # Validation 1: Check if position size exceeds policy maximum
     if position_size_percent > max_position_size_percent:
         return {
@@ -43,7 +47,31 @@ def validate_policy(transaction_data: dict) -> dict:
             "limit": max_position_size_percent
         }
     
-    # Validation 2: Check if asset is whitelisted
+    # Validation 2: Daily limits - skipped for now
+
+    # Validation 3: Stop loss
+    if policy["risk_management"]["stop_loss"]["required"]:
+        if stop_loss_price is None or stop_loss_price == 0:
+            return {
+                "status": "rejected",
+                "reason": f"Stop-loss is required by policy but not set",
+                "field": "stop_loss_price",
+                "actual": stop_loss_price
+            }
+    
+    # Validation 4: Take profit
+    if policy["risk_management"]["take_profit"]["required"]:
+        if target_exit_price is None or target_exit_price == 0:
+            return {
+                "status": "rejected",
+                "reason": f"Take-profit is required by policy but not set",
+                "field": "target_exit_price",
+                "actual": target_exit_price
+            }
+
+    ## Asset policies Validations ##
+    
+    # Validation 1: Check if asset is whitelisted
     if policy["asset_policies"]["whitelist"]:
         if coin_symbol.upper() not in [a.upper() for a in whitelisted_assets]:
             return {
@@ -53,16 +81,35 @@ def validate_policy(transaction_data: dict) -> dict:
                 "actual": coin_symbol.upper(),
                 "allowed": whitelisted_assets
             }
-    
-    # Validation 3: Check if stop-loss is set when required
-    if policy["risk_management"]["stop_loss"]["required"]:
-        if stop_loss_price is None or stop_loss_price == 0:
-            return {
-                "status": "rejected",
-                "reason": f"Stop-loss is required by policy but not set",
-                "field": "stop_loss_price",
-                "actual": stop_loss_price
-            }
+
+    # Validation 2: Minimum market cap
+    min_market_cap_usd = policy["asset_policies"]["minimum_market_cap_usd"]
+    if coin_market_cap < min_market_cap_usd:
+        return {
+            "status": "rejected",
+            "reason": f"Asset market cap ${coin_market_cap} is below minimum required ${min_market_cap_usd}",
+            "field": "coin_market_cap",
+            "actual": coin_market_cap,
+            "limit": min_market_cap_usd
+        }
+        
+    ## Trading rules Validations ##
+
+    # Validation 1: Check if order type is allowed
+    allowed_order_types = policy["trading_rules"]["allowed_order_types"]    
+    if order_type not in [ot.lower() for ot in allowed_order_types]:
+        return {
+            "status": "rejected",
+            "reason": f"Order type '{order_type}' is not allowed. Allowed types: {allowed_order_types}",
+            "field": "order_type",
+            "actual": order_type,
+            "allowed": allowed_order_types
+        }
+
+    # Validation 2: Volatility check - skipped for now
+
+    # Validation 3: Liquidity check - skipped for now
+
         
     # If all validations pass
     return {

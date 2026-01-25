@@ -1,8 +1,7 @@
 {
   "risk_management": {
     "position_sizing": {
-      "max_position_size_percent": 5.0,
-      "max_single_asset_exposure_percent": 15.0
+      "max_position_size_percent": 5.0
     },
     "daily_limits": {
       "max_daily_loss_percent": 2.0,
@@ -16,14 +15,12 @@
       "required": true
     }
   },
-
   "asset_policies": {
     "whitelist": {
       "assets": ["BTC", "ETH", "SOL", "XRP"]
     },
     "minimum_market_cap_usd": 10000000000
   },
-
   "trading_rules": {
     "allowed_order_types": ["limit", "stop_loss", "take_profit"],
     "restricted_order_types": ["market"],
