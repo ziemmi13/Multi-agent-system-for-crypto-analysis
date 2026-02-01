@@ -4,8 +4,7 @@
       "max_position_size_percent": 35.0
     },
     "daily_limits": {
-      "max_daily_loss_percent": 10.0,
-      "max_trades_per_day": 50
+      "max_trades_per_day": 10
     },
     "stop_loss": {
       "required": false,
