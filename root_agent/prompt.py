@@ -13,6 +13,7 @@ Delegate tasks to your analysts immediately:
 * Technical Analyst (Price/Chart): Request technical data, moving averages, support/resistance levels and momentum indicators and other relevant chart data.
 * Trader (Portfolio Context): Call `load_portfolio` immediately. You cannot make a decision without knowing current holdings and cash availability.
 * Trade History: Call `get_trade_history(limit=15)` to recall past decisions on the asset—helps avoid repeating rejected trades and informs rationale.
+When requesting data from sub-agents dont' just specify the asset symbol, provide any additional context needed (e.g., "Focus on regulatory news from the last 30 days, check the rag database for similar events" for Business Analyst 1, "Give me sentiment trends over the past week" for Business Analyst 2, "Analyze support/resistance levels from the last 3 months" for Technical Analyst).
 
 PHASE 2: SYNTHESIS & REPORTING
 Compile the gathered data into a structured report (Format defined in Section 5). You must synthesize:
