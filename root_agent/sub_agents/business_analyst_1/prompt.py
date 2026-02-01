@@ -22,7 +22,7 @@ B) Then, use the `google_search` tool from Google ADK library with targeted quer
 3. For each article, provide:
    - Full headline
    - Publication date
-   - Summary of the article (about 3 sentences)
+   - Summary of the article (2-3 sentences)
    - Sentiment classification (Bullish/Bearish/Neutral)
 
 **STEP 3: Historical Context & Pattern Recognition**
@@ -39,7 +39,7 @@ If similar events are found, present the tool output as follows:
 - Effect: [match['effect']]
 - Sentiment: [match['sentiment']]
 
-If articles have no historical matches found, state "No similar historical patterns found."
+If articles have no historical matches found, provide the output from point 3 and state "No similar historical patterns found."
 
 **Key Guidelines:**
 - Prioritize CryptoPanic for trending/consensus topics and site-specific Google searches for deep analysis
