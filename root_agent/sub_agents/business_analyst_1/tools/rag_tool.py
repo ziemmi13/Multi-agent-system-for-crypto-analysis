@@ -4,31 +4,19 @@ import pandas as pd
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
 from dotenv import load_dotenv
-from typing import Optional
 
-# Load environment variables
-root_dir = pathlib.Path(__file__).parent.parent.parent.parent
+# Global cache for CSV data
+_csv_data = None
 
-load_dotenv(root_dir / '.env')
+# Determine directory paths
+PROJECT_DIR = pathlib.Path(__file__).parents[4]
+ROOT_DIR = pathlib.Path(__file__).parents[3]
+CHROMA_DB_DIR = PROJECT_DIR / "database/chroma_db"
+CSV_PATH = PROJECT_DIR / "database" / "cryptonews.csv"
 
-# Determine Chroma DB path: prefer project-level `database/chroma_db` if present,
-# otherwise fall back to `root_agent/database/chroma_db`.
-project_root = pathlib.Path(__file__).resolve().parents[4]
-agent_root = root_dir
-project_db = project_root / "database" / "chroma_db"
-agent_db = agent_root / "database" / "chroma_db"
+print(f"csv path: {CSV_PATH}")
 
-if (project_db / "chroma.sqlite3").exists():
-    CHROMA_DB_PATH = project_db
-elif (agent_db / "chroma.sqlite3").exists():
-    CHROMA_DB_PATH = agent_db
-else:
-    CHROMA_DB_PATH = project_db  # fallback - will create if missing
-
-# CSV path: prefer project-level CSV
-project_csv = project_root / "database" / "cryptonews.csv"
-agent_csv = agent_root / "database" / "cryptonews.csv"
-CSV_PATH = project_csv if project_csv.exists() else agent_csv
+load_dotenv(ROOT_DIR / '.env')
 
 # Initialize embedding function
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
@@ -37,12 +25,10 @@ openai_ef = embedding_functions.OpenAIEmbeddingFunction(
 )
 
 # Initialize ChromaDB client
-client = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
+client = chromadb.PersistentClient(path=str(CHROMA_DB_DIR))
 collection = client.get_or_create_collection(name="cryptonews_collection")
 
-# Load CSV data for retrieving cause and effect
-_csv_data = None
-
+# Load CSV data and cache it
 def _load_csv_data():
     """Load CSV data once and cache it"""
     global _csv_data
@@ -50,14 +36,14 @@ def _load_csv_data():
         _csv_data = pd.read_csv(CSV_PATH)
     return _csv_data
 
-def search_similar_news(article_headline: str, article_summary: str, similarity_threshold: float = 0.7) -> str:
+def search_similar_news(article_headline: str, article_summary: str, similarity_threshold: float=0.1) -> str:
     """
     Search for similar news articles summaries in the RAG database.
     
     Args:
         article_headline: The headline of the article
         article_summary: The summary of the article to search for
-        similarity_threshold: Similarity threshold (0-1, higher = more similar). Default 0.7.
+        similarity_threshold: Minimum similarity score to consider a match (0.0 to 1.0)
     
     Returns:
         A formatted string with matching article information (headline, summary, cause, effect, sentiment) if found, 
@@ -72,7 +58,7 @@ def search_similar_news(article_headline: str, article_summary: str, similarity_
             query_embeddings=article_embedding,
             n_results=5
         )
-        
+
         if not results['ids'] or len(results['ids'][0]) == 0:
             return ""
         
@@ -99,7 +85,7 @@ def search_similar_news(article_headline: str, article_summary: str, similarity_
                 if not article_row.empty:
                     row = article_row.iloc[0]
                     matches.append({
-                        'headline': row.get('headline', row.get('title', 'N/A')),
+                        'url': row.get('url', 'N/A'),
                         'summary': row.get('summary', 'N/A'),
                         'cause': row.get('cause', 'N/A'),
                         'effect': row.get('effect', 'N/A'),
@@ -115,7 +101,7 @@ def search_similar_news(article_headline: str, article_summary: str, similarity_
         for match in matches:
             output.append(f"**Similar Article Found ({match['similarity']*100:.0f}% match):**")
             output.append(f"Original Headline: {article_headline}")
-            output.append(f"- Headline: {match['headline']}")
+            output.append(f"- URL: {match['url']}")
             output.append(f"- Summary: {match['summary']}")
             output.append(f"- Cause: {match['cause']}")
             output.append(f"- Effect: {match['effect']}")
@@ -126,4 +112,3 @@ def search_similar_news(article_headline: str, article_summary: str, similarity_
         
     except Exception as e:
         return f"Error searching similar news: {str(e)}"
-
