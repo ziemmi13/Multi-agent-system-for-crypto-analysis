@@ -3,14 +3,25 @@ import uuid
 from datetime import datetime, UTC
 from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio 
 
-def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float,
-                         stop_price: float, order_type: str, currency: str = "usd", rationale: str = ""):
-    """Create a `TradeRequest` dict matching the agreed schema.
+def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float, stop_price: float, order_type: str, currency: str = "usd", rationale: str = ""):
+    """
+    Creates a `TradeRequest` dict matching the required schema.
+    
+    Parameters:
+        action: "buy", "sell", or "hold"
+        coin_id: CoinGecko coin ID (e.g., "bitcoin")
+        coin_market_cap: Current market capitalization of the coin in USD
+        symbol: Coin symbol (e.g., "btc")
+        quantity: Amount of the coin to trade
+        entry_price: Price at which to enter the trade
+        stop_price: Price at which to set the stop loss
+        order_type: "market", "limit", "stop_loss", "take_profit"
+        currency: Currency for the trade (default "usd")
+        rationale: Explanation for the trade decision
 
-    Fields:
-    - `action`: 'buy'|'sell'|'hold'
-    - `coin_id`, `symbol`, `currency`
-    - numeric fields are optional but recommended for validation by policy enforcer
+    Returns:
+    - A JSON string representing the TradeRequest object.
+
     """
     
     portfolio_assets, full_portfolio_value_usd = load_portfolio()

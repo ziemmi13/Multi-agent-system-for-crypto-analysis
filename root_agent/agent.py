@@ -1,10 +1,9 @@
+from dotenv import load_dotenv
+import pathlib
 from google.adk.agents import LlmAgent
 from google.adk.tools.agent_tool import AgentTool
 from google.genai.types import GenerateContentConfig
 from google.genai import types
-# for external LLM providers
-from google.adk.models.lite_llm import LiteLlm
-
 
 from . import prompt
 from .sub_agents.business_analyst_1.agent import business_analyst_1
@@ -12,19 +11,12 @@ from .sub_agents.business_analyst_2.agent import business_analyst_2
 from .sub_agents.technical_analyst.agent import technical_analyst
 from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
-from .sub_agents.trader.tools.trade import log_policy_rejection
+from .sub_agents.trader.tools.trade import get_trade_history, log_policy_rejection
 from .tools.trade_request_formatter import format_trade_request
-from dotenv import load_dotenv
-import pathlib
-import os
-import tiktoken
 
 # Load environment variables 
 root_dir = pathlib.Path(__file__).parent
 load_dotenv(root_dir / '.env')
-
-# Encoding
-encoding = tiktoken.encoding_for_model('gpt-4.1')
 
 # Generation config
 generation_config = {
@@ -47,18 +39,8 @@ my_config = GenerateContentConfig(
     candidate_count=1,
 )
 
-gemini_model = 'gemini-2.5-flash'
-open_ai_model = LiteLlm(model='openai/gpt-4.1',
-                  api_key=os.getenv("OPENAI_API_KEY"),
-                  logit_bias={
-                          encoding.encode("buy")[0]: 5,
-                          encoding.encode("sell")[0]: 5,
-                          encoding.encode("hold")[0]: -10,
-                    }  
-                  ) # For now the openai model doesn't work with tools
-
 root_agent = LlmAgent(
-    model=gemini_model,
+    model='gemini-2.5-flash',
     name='root_agent',
     description='Oversees business and technical cryptocurrencies analysts.',
     static_instruction=types.Content(role="system", parts=[types.Part(text=prompt.ROOT_AGENT_PROMPT)]),
@@ -71,6 +53,7 @@ root_agent = LlmAgent(
         AgentTool(agent=trader),
         format_trade_request,
         log_policy_rejection,
+        get_trade_history,
         ],
     generate_content_config=my_config,
 )

@@ -6,6 +6,7 @@ import json
 from .portfolio_manager import make_trade
 
 COINGECKO_ENDPOINT = "https://api.coingecko.com/api/v3"
+TRADE_LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "trade_log.txt")
 
 def get_current_price(coin_id: str, currency: str = "usd"):
     """Fetches the current price of a cryptocurrency from the CoinGecko API.
@@ -41,8 +42,7 @@ def log_trade(action: str, coin_id: str, symbol: str, currency: str = "usd"):
 
     price_str = price if price is not None else "N/A"
     log_entry = f"{datetime.now(UTC).isoformat().replace("+00:00", "Z")} - {action.upper()} - {coin_id} ({symbol}) at {price_str} {currency}\n"
-    log_file_path = os.path.join(os.path.dirname(__file__), "trade_log.txt")
-    with open(log_file_path, "a", encoding="utf-8") as log_file:
+    with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
     
     return {"status": "logged", "message": f"Trade action '{action}' for {symbol} logged at price {price_str} {currency}."}
@@ -82,8 +82,7 @@ def log_policy_rejection(trade_request: dict, rejection_reason: str, violations:
     reason_text = rejection_reason or "Policy violation"
     log_entry = f"{datetime.now(UTC).isoformat().replace("+00:00", "Z")} - REJECTED - {coin_id} ({symbol}) at {current_price} {currency} - Reason: {reason_text}\n"
     
-    log_file_path = os.path.join(os.path.dirname(__file__), "trade_log.txt")
-    with open(log_file_path, "a", encoding="utf-8") as log_file:
+    with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
     
     # Also log the full JSON entry for audit trail
@@ -95,7 +94,7 @@ def log_policy_rejection(trade_request: dict, rejection_reason: str, violations:
         "violations": violations or [],
         "policy_response": policy_response
     }
-    with open(log_file_path, "a", encoding="utf-8") as log_file:
+    with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(json.dumps(rejection_entry, default=str) + "\n")
     
     return {"status": "logged", "message": f"Policy rejection logged for {symbol}"}
@@ -158,11 +157,37 @@ def process_trade_request(trade_request: dict) -> dict:
 
     # Append audit log with the full request and execution result
     try:
-        log_file_path = os.path.join(os.path.dirname(__file__), "trade_log.txt")
-        with open(log_file_path, "a", encoding="utf-8") as f:
-            entry = {"timestamp": datetime.utcnow().isoformat(), "trade_request": trade_request, "execution": execution}
+        with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as f:
+            entry = {"timestamp": datetime.now().isoformat(), "trade_request": trade_request, "execution": execution}
             f.write(json.dumps(entry, default=str) + "\n")
     except Exception:
         pass
 
     return {"trade_request": trade_request, "execution": execution}
+
+
+def get_trade_history(limit: int = 20) -> list[dict]:
+    """Gets the trade history from the trade log file.
+    Args:
+        limit (int, optional): The number of trades to return. Defaults to 20.
+    Returns:
+        list[dict]: A list of trade history entries.
+    """
+    try:
+        with open(TRADE_LOG_FILE_PATH, "r") as f:
+            lines = f.readlines()
+        
+        reversed_lines = [line for line in reversed(lines)]
+        
+        trade_history = []
+        for line in reversed_lines[:limit]:
+            try:
+                entry = json.loads(line)
+                trade_history.append(entry)
+            except:
+                trade_history.append(line)
+    
+    except Exception:
+        return [{"error": "Failed to get trade history."}, {"trade_history": []}]
+    
+    return trade_history
