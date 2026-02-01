@@ -25,12 +25,13 @@ def get_current_price(coin_id: str, currency: str = "usd"):
     except:
         return None
 
-def log_trade(action: str, coin_id: str, symbol: str, currency: str = "usd"):
+def log_trade(action: str, coin_id: str, symbol: str, current_price: float, currency: str = "usd"):
     """Logs the trade action to a local file with a timestamp.
     Args:
         action (str): The trade action ('buy', 'sell', or 'hold').
         coin_id (str): The CoinGecko ID of the cryptocurrency (e.g., 'bitcoin').
         symbol (str): The symbol of the cryptocurrency (e.g., 'btc').
+        current_price (float): The current price of the cryptocurrency.
         currency (str): The currency in which the price is denominated.
         action (str): The trade action ('buy', 'sell', or 'hold').
     """
@@ -38,9 +39,11 @@ def log_trade(action: str, coin_id: str, symbol: str, currency: str = "usd"):
     if action_l not in ("buy", "sell", "hold"):
         return {"error": "Unsupported action. Use 'buy', 'sell', or 'hold'."}
     
-    price = get_current_price(coin_id, currency)
+    if current_price is None:
+        price_str = str(get_current_price(coin_id, currency))
+    else:
+        price_str = str(current_price)
 
-    price_str = price if price is not None else "N/A"
     log_entry = f"{datetime.now(UTC).isoformat().replace("+00:00", "Z")} - {action.upper()} - {coin_id} ({symbol}) at {price_str} {currency}\n"
     with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
@@ -120,6 +123,7 @@ def process_trade_request(trade_request: dict) -> dict:
     position = trade_request.get("position", {})
     order_type = position.get("order_type", "MARKET").upper()
     entry_price = position.get("entry_price", 0.0)
+    current_price = asset.get("current_price_usd", 0.0)
 
     coin_id = asset.get("coin_id")
     symbol = asset.get("symbol")
@@ -127,7 +131,7 @@ def process_trade_request(trade_request: dict) -> dict:
 
     execution = None
     if action == "hold":
-        log_res = log_trade(action, coin_id, symbol, currency)
+        log_res = log_trade(action, coin_id, symbol, current_price, currency)
         execution = {"status": "logged_hold", "result": log_res}
     else: # BUY or SELL
         binance_symbol = f"{symbol.upper()}USDT"
@@ -148,7 +152,7 @@ def process_trade_request(trade_request: dict) -> dict:
             
             # If trade executed successfully, log it
             if trade_result and not trade_result.get("error"):
-                log_res = log_trade(action, coin_id, symbol, currency)
+                log_res = log_trade(action, coin_id, symbol, current_price, currency)
                 execution = {"status": "executed", "result": {"trade": trade_result, "log": log_res}}
             else:
                 execution = {"status": "error", "result": trade_result}
