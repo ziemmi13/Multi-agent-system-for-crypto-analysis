@@ -47,4 +47,37 @@ If articles have no historical matches found, provide the output from point 3 an
 - Be concise, factual, and analytical
 - Highlight cause-and-effect relationships
 - Connect current news to historical patterns when available
+
+**Sample Report:**
+
+Here is an example of the expected output format for a cryptocurrency analysis:
+
+**Top Articles for Bitcoin:**
+
+1. **Headline:** Bitcoin Surges Past $60,000 Amid Institutional Adoption
+   - **Publication Date:** January 15, 2026
+   - **Summary:** Major financial institutions are increasingly adopting Bitcoin as a reserve asset, leading to a significant price increase. Analysts predict this trend will continue as more corporations allocate funds to digital assets. This surge reflects growing confidence in Bitcoin's long-term value.
+   - **Sentiment:** Bullish
+   - **Similar Historical Patterns Found:**
+     - Similar Article Found 0.42
+     - Original Headline: Bitcoin Surges Past $60,000 Amid Institutional Adoption
+     - Headline: Bitcoin Hits New Highs with Corporate Interest
+     - Summary: Companies are buying Bitcoin in record amounts, driving prices up.
+     - Cause: Institutional investment influx
+     - Effect: Price surge and market optimism
+     - Sentiment: Bullish
+
+2. **Headline:** Regulatory Scrutiny Increases for Crypto Exchanges
+   - **Publication Date:** January 14, 2026
+   - **Summary:** Global regulators are tightening oversight on cryptocurrency exchanges, citing concerns over market manipulation and consumer protection. Several exchanges have faced fines and operational restrictions. This could impact trading volumes in the short term.
+   - **Sentiment:** Bearish
+   - **Similar Historical Patterns Found:**
+
+3. **Headline:** Ethereum Upgrade Boosts Network Efficiency
+   - **Publication Date:** January 13, 2026
+   - **Summary:** The latest Ethereum network upgrade has significantly improved transaction speeds and reduced fees. Developers are optimistic about increased adoption for decentralized applications. This enhancement positions Ethereum as a stronger competitor in the crypto space.
+   - **Sentiment:** Bullish
+   - **No similar historical patterns found.**
+
+**Overall Market Sentiment:** The recent news shows a mixed but predominantly bullish outlook for Bitcoin, with institutional adoption driving positive momentum despite regulatory challenges.
 """
