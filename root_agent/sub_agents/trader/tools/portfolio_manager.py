@@ -126,7 +126,7 @@ def make_trade(symbol: str, side: str, quantity: float, order_type: str,
         symbol (str): Trading pair symbol (e.g., 'BTCUSDT').
         side (str): 'BUY' or 'SELL'.
         quantity (float): Amount to buy/sell.
-        order_type (str): Type of order ('MARKET', 'LIMIT', 'STOP_LOSS', etc.).
+        order_type (str): Type of order ('MARKET', 'LIMIT', 'STOP_LOSS', TAKE_PROFIT).
         price (float, optional): Price for LIMIT orders.
         stop_price (float, optional): Stop price for STOP_LOSS/TAKE_PROFIT orders.
         time_in_force (str, optional): Time in force for LIMIT orders ('GTC', 'IOC', etc.)."""
