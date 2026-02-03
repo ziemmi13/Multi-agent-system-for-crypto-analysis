@@ -1,6 +1,7 @@
 from datetime import datetime
-import requests
 from typing import Dict, Any
+import requests
+import numpy as np
 
 def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd"):
     """Fetches technical data for a given cryptocurrency from the CoinGecko API.
@@ -64,6 +65,7 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
         price_change_percentage_1y = market_data.get("price_change_percentage_1y", "N/A")
         market_cap_change_24h = market_data.get("market_cap_change_24h", "N/A")
         market_cap_change_percentage_24h = market_data.get("market_cap_change_percentage_24h", "N/A")
+        volatility_1d = calculate_volatility_1d(coin_id, currency)
 
         # Supply
         total_supply = market_data.get("total_supply", "N/A")
@@ -97,8 +99,29 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
             "total_supply": total_supply,
             "max_supply": max_supply,
             "circulating_supply": circulating_supply,
+            "volatility_1d": volatility_1d,
         }
     except Exception as e:
         technical_data = {"error": str(e)}
 
     return technical_data
+
+def calculate_volatility_1d(coin_id: str, currency: str = "usd") -> float:
+    """Calculates 1-day volatility using price data from CoinGecko."""
+    try:
+        url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency={currency}&days=1"
+        response = requests.get(url).json()
+        prices = response.get("prices", [])
+        if len(prices) < 2:
+            return "N/A" #type: ignore
+        # Extract price values
+        price_values = [p[1] for p in prices]
+        # Calculate log returns
+        log_returns = [np.log(price_values[i] / price_values[i-1]) for i in range(1, len(price_values))]
+        # Volatility as standard deviation of log returns (annualized)
+        num_periods_per_year = len(log_returns) * 365  # Approximate
+        volatility = np.std(log_returns) * np.sqrt(num_periods_per_year)
+        volatility_percentage = volatility * 100
+        return volatility_percentage
+    except Exception as e:
+        return "N/A" #type: ignore

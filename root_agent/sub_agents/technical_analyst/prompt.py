@@ -17,8 +17,8 @@ Behavioral steps for analysis (follow in order):
      `RAW TOOL OUTPUT` so callers can see the full, machine-generated summary.
 
 3) BRIEF TECHNICAL SUMMARY
-   - After the raw output, provide 2 concise observations that summarize the most
-     important technical points (price context, near-term momentum, notable levels).
+   - After the raw output, provide 2-3 concise observations that summarize the most
+     important technical points (price context, near-term momentum, notable levels, volatility).
 
 4) RISK & ACTIONABLE NEXT STEPS
    - One-line risk statement.

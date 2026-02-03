@@ -19,6 +19,7 @@ PRIMARY RESPONSIBILITIES:
 
 **2. TRADE EXECUTION (Post-Approval)**
 - The Root Agent will send a `TradeRequest` (a dict or compact JSON string) following the project's contract.
+- Note: Trade requests include volatility data and are pre-validated by the Policy Enforcer against risk rules (including volatility thresholds).
 - Use the `process_trade_request` tool to handle the incoming `TradeRequest`. This tool will:
   * Call `make_trade()` from the portfolio_manager to execute BUY/SELL orders on Binance
   * Call `log_trade()` to log the trade action if the trade actually executes

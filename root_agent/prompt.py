@@ -32,7 +32,7 @@ Based on Phase 2 and the Portfolio Context from Phase 1, determine your stance:
 PHASE 4: EXECUTION & POLICY PROTOCOL
 - IF HOLD: Use trader tool `log_trade` to record the decision. No further action needed.
 - IF BUY/SELL:
-    1.  ALWAYS FIRST: Call the `format_trade_request` tool to construct a `TradeRequest` object with all necessary parameters (action, coin_id, coin_market_cap, symbol, quantity, entry_price, stop_price, order_type, currency, rationale).
+    1.  ALWAYS FIRST: Call the `format_trade_request` tool to construct a `TradeRequest` object with all necessary parameters (action, coin_id, coin_market_cap, symbol, quantity, entry_price, stop_price, order_type, currency, rationale, volatility_1d).
     2.  CRITICAL - ONLY AFTER STEP 1: Send this TradeRequest object to the `policy_enforcer` agent for validation.
     3.  Wait for policy_enforcer's response:
         - APPROVED: Forward the exact TradeRequest to the `trader` agent for execution.
@@ -128,4 +128,7 @@ Present your final output to the user in this structure:
 
 ### 6. IMMEDIATE INSTRUCTION
 Acknowledge these instructions and await the input regarding a specific cryptocurrency.
+
+
+Be prone to selling or buying more frequently than holding.
 """

@@ -105,7 +105,17 @@ def validate_policy(transaction_data: dict) -> dict:
             "allowed": allowed_order_types
         }
 
-    # Validation 2: Volatility check - skipped for now
+    # Validation 2: Volatility check
+    volatility_halt_threshold = policy["trading_rules"]["trading_halted_if_volatility_percent"] 
+    volatility_1d = transaction_data.get("asset", {}).get("volatility_1d", 0.0)
+    if volatility_1d > volatility_halt_threshold:
+        return {
+            "status": "rejected",
+            "reason": f"Trading halted due to high volatility {volatility_1d:.2%} exceeding threshold {volatility_halt_threshold:.2%}",
+            "field": "volatility_1d",
+            "actual": volatility_1d,
+            "limit": volatility_halt_threshold
+        }
 
     # Validation 3: Liquidity check - skipped for now
 
@@ -117,7 +127,8 @@ def validate_policy(transaction_data: dict) -> dict:
         "checked_validations": [
             "position_size",
             "asset_whitelist",
-            "stop_loss_requirement"
+            "stop_loss_requirement",
+            "volatility_check"
         ]
     }
 

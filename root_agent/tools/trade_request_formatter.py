@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, UTC
 from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio 
 
-def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float, stop_price: float, order_type: str, currency: str = "usd", rationale: str = ""):
+def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float, stop_price: float, order_type: str, currency: str = "usd", rationale: str = "", volatility_1d: float = 0.0):
     """
     Creates a `TradeRequest` dict matching the required schema.
     
@@ -18,6 +18,7 @@ def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symb
         order_type: "market", "limit", "stop_loss", "take_profit"
         currency: Currency for the trade (default "usd")
         rationale: Explanation for the trade decision
+        volatility_1d: 1-day annualized volatility (e.g., 0.5 for 50%)
 
     Returns:
     - A JSON string representing the TradeRequest object.
@@ -37,6 +38,7 @@ def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symb
             "coin_id": coin_id.lower(),
             "coin_market_cap": coin_market_cap,
             "current_price_usd": entry_price if entry_price is not None else 0.0,
+            "volatility_1d": volatility_1d,
             "currency": currency.lower()
         },
         "position": {
