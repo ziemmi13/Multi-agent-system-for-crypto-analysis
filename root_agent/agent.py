@@ -18,24 +18,13 @@ from .tools.trade_request_formatter import format_trade_request
 root_dir = pathlib.Path(__file__).parent
 load_dotenv(root_dir / '.env')
 
-# Generation config
-generation_config = {
-    "temperature": 0.7,
-    "top_p": 0.95,
-    "top_k": 40,       
-    "max_output_tokens": 5000,
-}
-
-# Models
+# Config
 my_config = GenerateContentConfig(
-    temperature=0,
-    top_k=20,
-    top_p=0.95,
-    # max_output_tokens=1000,
+    temperature=0.5,
+    top_k=50,
+    top_p=0.9,
     presence_penalty=0.0,
     frequency_penalty=0.0,
-    # stop_sequences=["STOP!"],
-    # response_mime_type="application/json", # This will cause an error if agent uses tools
     candidate_count=1,
 )
 
