@@ -23,7 +23,7 @@
   "trading_rules": {
     "allowed_order_types": ["limit", "stop_loss", "take_profit"],
     "restricted_order_types": ["market"],
-    "trading_halted_if_volatility_percent": 10.0,
+    "trading_halted_if_volatility_percent": 50.0,
     "minimum_liquidity_usd": 50000000
   }
 }
