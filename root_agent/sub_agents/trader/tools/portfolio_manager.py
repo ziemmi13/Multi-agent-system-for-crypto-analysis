@@ -79,7 +79,7 @@ def load_portfolio():
         locked = float(balance.get("locked", 0.0))
         total = free + locked
         
-        if total > 0 and asset in ALLOWED_ASSETS:
+        if asset in ALLOWED_ASSETS:
             # Initialize entry
             portfolio_assets[asset] = {
                 "free": free,
