@@ -39,7 +39,8 @@ If similar events are found, present the tool output as follows:
 - Effect: [match['effect']]
 - Sentiment: [match['sentiment']]
 
-If articles have no historical matches found, provide the output from point 3 and state "No similar historical patterns found."
+If the article has no similar historical patterns, state:
+**No similar historical patterns found.**
 
 **Key Guidelines:**
 - Prioritize CryptoPanic for trending/consensus topics and site-specific Google searches for deep analysis
@@ -47,6 +48,7 @@ If articles have no historical matches found, provide the output from point 3 an
 - Be concise, factual, and analytical
 - Highlight cause-and-effect relationships
 - Connect current news to historical patterns when available
+- Let your response be in the form of a structured report depicted below in the **Sample Report** section:
 
 **Sample Report:**
 
