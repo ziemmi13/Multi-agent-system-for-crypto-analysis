@@ -119,13 +119,13 @@ def validate_policy(transaction_data: dict) -> dict:
 
     # Validation 2: Volatility check
     volatility_halt_threshold = policy["trading_rules"]["trading_halted_if_volatility_percent"] 
-    volatility_1d = transaction_data.get("asset", {}).get("volatility_1d", 0.0)
-    if volatility_1d > volatility_halt_threshold:
+    volatility_1d_percent = transaction_data.get("asset", {}).get("volatility_1d", 0.0)
+    if volatility_1d_percent > volatility_halt_threshold:
         return {
             "status": "rejected",
-            "reason": f"Trading halted due to high volatility {volatility_1d:.2%} exceeding threshold {volatility_halt_threshold:.2%}",
+            "reason": f"Trading halted due to high volatility {volatility_1d_percent:.2%} exceeding threshold {volatility_halt_threshold:.2%}",
             "field": "volatility_1d",
-            "actual": volatility_1d,
+            "actual": volatility_1d_percent,
             "limit": volatility_halt_threshold
         }
 

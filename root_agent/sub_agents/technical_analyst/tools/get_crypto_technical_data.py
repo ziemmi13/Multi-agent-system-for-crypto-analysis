@@ -107,21 +107,33 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
     return technical_data
 
 def calculate_volatility_1d(coin_id: str, currency: str = "usd") -> float:
-    """Calculates 1-day volatility using price data from CoinGecko."""
+    """Calculates 1-day Range Volatility using price data from CoinGecko.
+    Args:
+        coin_id (str): The CoinGecko ID of the cryptocurrency.
+        currency (str, optional): The fiat currency to compare against. Defaults to "usd".
+    Returns:
+        float: The 1-day volatility percentage.
+    """
     try:
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency={currency}&days=1"
         response = requests.get(url).json()
-        prices = response.get("prices", [])
-        if len(prices) < 2:
+        
+        prices_data = response.get("prices", [])
+        if len(prices_data) < 2:
             return "N/A" #type: ignore
+        
         # Extract price values
-        price_values = [p[1] for p in prices]
-        # Calculate log returns
-        log_returns = [np.log(price_values[i] / price_values[i-1]) for i in range(1, len(price_values))]
-        # Volatility as standard deviation of log returns (annualized)
-        num_periods_per_year = len(log_returns) * 365  # Approximate
-        volatility = np.std(log_returns) * np.sqrt(num_periods_per_year)
-        volatility_percentage = volatility * 100
-        return volatility_percentage
+        price_values = [p[1] for p in prices_data]
+        
+        # High and low prices
+        high_price = max(price_values)
+        low_price = min(price_values)
+        
+        # ((High - Low) / Low) * 100
+        volatility_range = ((high_price - low_price) / low_price) * 100
+        
+        return round(volatility_range, 2)
+        
     except Exception as e:
+        print(f"Error calculating volatility: {e}")
         return "N/A" #type: ignore

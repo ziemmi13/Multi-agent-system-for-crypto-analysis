@@ -19,7 +19,7 @@ def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symb
         order_type: "market", "limit", "stop_loss", "take_profit"
         currency: Currency for the trade (default "usd")
         rationale: Explanation for the trade decision
-        volatility_1d: 1-day annualized volatility (e.g., 0.5 for 50%)
+        volatility_1d: 1-day annualized volatility (e.g. 50%)
 
     Returns:
     - A JSON string representing the TradeRequest object.
