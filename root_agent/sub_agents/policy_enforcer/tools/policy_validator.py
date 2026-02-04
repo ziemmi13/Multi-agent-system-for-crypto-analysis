@@ -1,5 +1,6 @@
 from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio
 from .policy_loading import load_policy
+import os
 
 def validate_policy(transaction_data: dict) -> dict:
     """
@@ -16,7 +17,8 @@ def validate_policy(transaction_data: dict) -> dict:
     if transaction_data["action"].lower() == "hold":
         return {"status": "approved", "reason": "Hold action requires no risk validation."}
     
-    policy = load_policy(policy_type="aggressive")
+    policy_type = os.getenv("TRADING_STRATEGY", "aggressive")  # Default to aggressive
+    policy = load_policy(policy_type=policy_type)
     portfolio_assets, full_portfolio_value_usd  = load_portfolio()
 
     # Unpack necessary data from policy

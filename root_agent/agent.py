@@ -6,6 +6,7 @@ from google.genai.types import GenerateContentConfig
 from google.genai import types
 
 from . import prompt
+import os
 from .sub_agents.business_analyst_1.agent import business_analyst_1
 from .sub_agents.business_analyst_2.agent import business_analyst_2
 from .sub_agents.technical_analyst.agent import technical_analyst
@@ -28,11 +29,18 @@ my_config = GenerateContentConfig(
     candidate_count=1,
 )
 
+# Choose prompt based on strategy
+strategy = os.getenv("TRADING_STRATEGY")
+if strategy == "safe":
+    selected_prompt = prompt.ROOT_AGENT_PROMPT_SAFE
+else:
+    selected_prompt = prompt.ROOT_AGENT_PROMPT_AGGRESSIVE
+
 root_agent = LlmAgent(
     model='gemini-2.5-flash',
     name='root_agent',
     description='Oversees business and technical cryptocurrencies analysts.',
-    static_instruction=types.Content(role="system", parts=[types.Part(text=prompt.ROOT_AGENT_PROMPT)]),
+    static_instruction=types.Content(role="system", parts=[types.Part(text=selected_prompt)]),
     # instruction="BTC",
     tools=[
         AgentTool(agent=business_analyst_1), 
