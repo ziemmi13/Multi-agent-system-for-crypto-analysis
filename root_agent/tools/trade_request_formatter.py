@@ -2,6 +2,7 @@ import json
 import uuid
 from datetime import datetime, UTC
 from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio 
+from root_agent.sub_agents.trader.tools.trade import get_trade_history 
 
 def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float, stop_price: float, order_type: str, currency: str = "usd", rationale: str = "", volatility_1d: float = 0.0):
     """
@@ -29,6 +30,10 @@ def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symb
 
     position_size_percent = (quantity * entry_price / float(full_portfolio_value_usd) * 100) if full_portfolio_value_usd else 0.0
 
+    # Get today's trade count
+    trade_history_data = get_trade_history(limit=1)  # We only need the count, so limit=1 is fine
+    today_trade_count = trade_history_data.get("today_trade_count", 0)
+
     trade = {
         "id": str(uuid.uuid4()),
         "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
@@ -48,6 +53,7 @@ def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symb
             "stop_price": stop_price,
             "order_type": order_type
         },
+        "today_trade_count": today_trade_count,
         "rationale": rationale,
     }
 

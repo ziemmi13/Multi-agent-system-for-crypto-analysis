@@ -21,6 +21,7 @@ def validate_policy(transaction_data: dict) -> dict:
 
     # Unpack necessary data from policy
     max_position_size_percent = policy["risk_management"]["position_sizing"]["max_position_size_percent"]
+    max_trades_per_day = policy["risk_management"]["daily_limits"]["max_trades_per_day"]
     whitelisted_assets = policy["asset_policies"]["whitelist"]["assets"]
 
     # Unpack transaction details
@@ -34,6 +35,7 @@ def validate_policy(transaction_data: dict) -> dict:
     stop_loss_price = transaction_data.get("position", {}).get("stop_loss_price", None)
     order_type = transaction_data.get("position", {}).get("order_type", "").lower()
     coin_market_cap = transaction_data.get("asset", {}).get("coin_market_cap", 0.0)
+    today_trade_count = transaction_data.get("today_trade_count", 0)
 
     ## Risk management Validations ##
     # Validation 1: Check if position size exceeds policy maximum
@@ -46,7 +48,15 @@ def validate_policy(transaction_data: dict) -> dict:
             "limit": max_position_size_percent
         }
     
-    # Validation 2: Daily limits - skipped for now
+    # Validation 2: Daily limits
+    if today_trade_count >= max_trades_per_day:
+        return {
+            "status": "rejected",
+            "reason": f"Daily trade limit exceeded: {today_trade_count} trades today, max allowed {max_trades_per_day}",
+            "field": "today_trade_count",
+            "actual": today_trade_count,
+            "limit": max_trades_per_day
+        }
 
     # Validation 3: Stop loss
     if policy["risk_management"]["stop_loss"]["required"]:
@@ -126,6 +136,7 @@ def validate_policy(transaction_data: dict) -> dict:
         "reason": "All risk validations passed",
         "checked_validations": [
             "position_size",
+            "daily_limits",
             "asset_whitelist",
             "stop_loss_requirement",
             "volatility_check"

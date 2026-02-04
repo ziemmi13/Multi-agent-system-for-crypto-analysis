@@ -170,13 +170,17 @@ def process_trade_request(trade_request: dict) -> dict:
     return {"trade_request": trade_request, "execution": execution}
 
 
-def get_trade_history(limit: int = 20) -> list[dict]:
+def get_trade_history(limit: int = 20) -> dict:
     """Gets the trade history from the trade log file.
     Args:
         limit (int, optional): The number of trades to return. Defaults to 20.
     Returns:
-        list[dict]: A list of trade history entries.
+        dict: A dictionary containing the trade history and today's trade count.
     """
+    
+    today_trade_count = 0
+    today = datetime.now(UTC).date()
+
     try:
         with open(TRADE_LOG_FILE_PATH, "r") as f:
             lines = f.readlines()
@@ -187,11 +191,17 @@ def get_trade_history(limit: int = 20) -> list[dict]:
         for line in reversed_lines[:limit]:
             try:
                 entry = json.loads(line)
+                entry_date = datetime.fromisoformat(entry["timestamp"]).date()
+                if entry_date == today:
+                    today_trade_count += 1
                 trade_history.append(entry)
             except:
+                entry_date = datetime.fromisoformat(line.split(" - ")[0].replace("Z", "+00:00")).date()                    
+                if entry_date == today:
+                    today_trade_count += 1
                 trade_history.append(line)
-    
+
     except Exception:
-        return [{"error": "Failed to get trade history."}, {"trade_history": []}]
+        return {"error": "Failed to get trade history", "trade_history": [], "today_trade_count": today_trade_count}
     
-    return trade_history
+    return {"trade_history": trade_history, "today_trade_count": today_trade_count}
