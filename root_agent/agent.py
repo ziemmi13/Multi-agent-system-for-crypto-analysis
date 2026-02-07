@@ -36,14 +36,15 @@ if strategy == "safe":
 else:
     selected_prompt = prompt.ROOT_AGENT_PROMPT_AGGRESSIVE
 
+# AgentTools: root calls subagents as tools so responses come back (avoids transfer_to_agent null).
+# sub_agents: same list so ADK web UI shows the hierarchy; prompt tells model to use tools, not transfer_to_agent.
 root_agent = LlmAgent(
     model='gemini-2.5-flash',
     name='root_agent',
     description='Oversees business and technical cryptocurrencies analysts.',
     static_instruction=types.Content(role="system", parts=[types.Part(text=selected_prompt)]),
-    # instruction="BTC",
     tools=[
-        AgentTool(agent=business_analyst_1), 
+        AgentTool(agent=business_analyst_1),
         AgentTool(agent=business_analyst_2),
         AgentTool(agent=technical_analyst),
         AgentTool(agent=policy_enforcer),
@@ -51,6 +52,7 @@ root_agent = LlmAgent(
         format_trade_request,
         log_policy_rejection,
         get_trade_history,
-        ],
+    ],
     generate_content_config=my_config,
+    sub_agents=[business_analyst_1, business_analyst_2, technical_analyst, policy_enforcer, trader],
 )
