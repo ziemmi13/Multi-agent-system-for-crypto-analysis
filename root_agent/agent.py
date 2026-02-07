@@ -36,8 +36,6 @@ if strategy == "safe":
 else:
     selected_prompt = prompt.ROOT_AGENT_PROMPT_AGGRESSIVE
 
-# AgentTools: root calls subagents as tools so responses come back (avoids transfer_to_agent null).
-# sub_agents: same list so ADK web UI shows the hierarchy; prompt tells model to use tools, not transfer_to_agent.
 root_agent = LlmAgent(
     model='gemini-2.5-flash',
     name='root_agent',
@@ -55,4 +53,13 @@ root_agent = LlmAgent(
     ],
     generate_content_config=my_config,
     # sub_agents=[business_analyst_1, business_analyst_2, technical_analyst, policy_enforcer, trader],
+)
+
+# Logging setup
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )

@@ -1,9 +1,12 @@
 from locale import currency
+import logging
 import requests
 from datetime import datetime, UTC
 import os
 import json
 from .portfolio_manager import make_trade
+
+logger = logging.getLogger(__name__)
 
 COINGECKO_ENDPOINT = "https://api.coingecko.com/api/v3"
 TRADE_LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "trade_log.txt")
@@ -47,7 +50,7 @@ def log_trade(action: str, coin_id: str, symbol: str, current_price: float, curr
     log_entry = f"{datetime.now(UTC).isoformat().replace("+00:00", "Z")} - {action.upper()} - {coin_id} ({symbol}) at {price_str} {currency}\n"
     with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
-    
+    logger.info(log_entry)
     return {"status": "logged", "message": f"Trade action '{action}' for {symbol} logged at price {price_str} {currency}."}
 
 
@@ -99,7 +102,7 @@ def log_policy_rejection(trade_request: dict, rejection_reason: str, violations:
     }
     with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(json.dumps(rejection_entry, default=str) + "\n")
-    
+    logger.warning(rejection_entry)
     return {"status": "logged", "message": f"Policy rejection logged for {symbol}"}
 
 
@@ -115,10 +118,12 @@ def process_trade_request(trade_request: dict) -> dict:
     """
     # Expect a dict (the agent runtime will pass parsed JSON as a dict).
     if not isinstance(trade_request, dict):
+        logger.warning("process_trade_request rejected: trade_request must be a dict")
         return {"error": "trade_request must be a dict"}
 
     # Basic validation
     action = trade_request.get("action", "").lower()
+    logger.info("Processing trade request: action=%s, asset=%s", action, trade_request.get("asset", {}).get("symbol", "?"))
     asset = trade_request.get("asset", {})
     position = trade_request.get("position", {})
     order_type = position.get("order_type", "MARKET").upper()
@@ -133,6 +138,7 @@ def process_trade_request(trade_request: dict) -> dict:
     if action == "hold":
         log_res = log_trade(action, coin_id, symbol, current_price, currency)
         execution = {"status": "logged_hold", "result": log_res}
+        logger.info("Hold logged for %s (%s)", symbol, coin_id)
     else: # BUY or SELL
         binance_symbol = f"{symbol.upper()}USDT"
         side = "BUY" if action == "buy" else "SELL"
@@ -152,20 +158,25 @@ def process_trade_request(trade_request: dict) -> dict:
             
             # If trade executed successfully, log it
             if trade_result and not trade_result.get("error"):
+                logger.info("Trade executed: %s %s (%s)", action.upper(), symbol, coin_id)
                 log_res = log_trade(action, coin_id, symbol, current_price, currency)
                 execution = {"status": "executed", "result": {"trade": trade_result, "log": log_res}}
+                
             else:
+                logger.error("Trade execution error: %s", trade_result)
                 execution = {"status": "error", "result": trade_result}
         except Exception as e:
             execution = {"status": "error", "result": f"Trade execution failed: {str(e)}"}
+            logger.exception("Trade execution failed for %s (%s)", symbol or "?", coin_id or "?")
 
     # Append audit log with the full request and execution result
     try:
         with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as f:
             entry = {"timestamp": datetime.now().isoformat(), "trade_request": trade_request, "execution": execution}
             f.write(json.dumps(entry, default=str) + "\n")
+            logger.info("Audit log entry written: %s", entry)
     except Exception:
-        pass
+        logger.error("Failed to write audit log entry: %s", entry)
 
     return {"trade_request": trade_request, "execution": execution}
 
