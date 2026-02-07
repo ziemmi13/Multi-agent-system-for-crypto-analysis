@@ -1,11 +1,8 @@
 from google.adk.agents import LlmAgent 
 from google.genai import types
 
-
 from .tools.get_telegram_news import get_telegram_news
 from .prompt import BUSINESS_ANALYST_2_PROMPT
-
-
 
 business_analyst_2 = LlmAgent(
     model='gemini-2.5-flash',

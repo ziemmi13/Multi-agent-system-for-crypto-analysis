@@ -33,7 +33,7 @@ Available channels (very brief descriptions):
 1. ANALYZE THE USER QUERY to identify:
    - Specific cryptocurrencies mentioned (Bitcoin, Etherum, Solana, etc.)
 
-2. SELECT RELEVANT CHANNELS (max 6) based on query content:
+2. SELECT RELEVANT CHANNELS (max 5) based on query content:
    - Based on the root_agent input prioritize "News_channels" for general news queries or "Trading_channels" for trading signal queries.
    - Choose channels that focus on the cryptocurrencies identified in step 1.
 
