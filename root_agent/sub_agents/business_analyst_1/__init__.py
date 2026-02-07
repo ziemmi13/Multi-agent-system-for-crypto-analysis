@@ -1,1 +1,1 @@
-from .agent import business_analyst_1
+from .agent import google_search_agent
