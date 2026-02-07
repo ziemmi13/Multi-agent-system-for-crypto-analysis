@@ -54,5 +54,5 @@ root_agent = LlmAgent(
         get_trade_history,
     ],
     generate_content_config=my_config,
-    sub_agents=[business_analyst_1, business_analyst_2, technical_analyst, policy_enforcer, trader],
+    # sub_agents=[business_analyst_1, business_analyst_2, technical_analyst, policy_enforcer, trader],
 )

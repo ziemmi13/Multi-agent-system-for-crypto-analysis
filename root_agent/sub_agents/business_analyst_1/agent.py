@@ -17,5 +17,5 @@ business_analyst_1 = LlmAgent(
         search_similar_news,
         AgentTool(agent=google_search_agent)
     ],
-    sub_agents=[google_search_agent]
+    # sub_agents=[google_search_agent]
 )
