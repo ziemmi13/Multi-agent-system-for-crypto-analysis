@@ -47,7 +47,12 @@ def log_trade(action: str, coin_id: str, symbol: str, current_price: float, curr
     else:
         price_str = str(current_price)
 
-    log_entry = f"{datetime.now(UTC).isoformat().replace("+00:00", "Z")} - {action.upper()} - {coin_id} ({symbol}) at {price_str} {currency}\n"
+    if action_l == "hold":
+        log_entry = f"{datetime.now(UTC).isoformat().replace('+00:00', 'Z')} - {action.upper()} - {coin_id} ({symbol}) at {price_str} {currency}\n"
+    else: # Buy or sell is already logged in process_trade_request, so we dont want to duplicate the count in the log, we just want to log the action without counting it as a new trade in the history
+        action_taken = "BOUGHT" if action_l == "buy" else "SOLD"
+        log_entry = f"{datetime.now(UTC).isoformat().replace('+00:00', 'Z')} - {action_taken} - {coin_id} ({symbol}) at {price_str} {currency}\n"
+    
     with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
     logger.info(log_entry)
