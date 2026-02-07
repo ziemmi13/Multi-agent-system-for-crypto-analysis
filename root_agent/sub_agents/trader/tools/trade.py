@@ -193,12 +193,21 @@ def get_trade_history(limit: int = 20) -> dict:
                 entry = json.loads(line)
                 entry_date = datetime.fromisoformat(entry["timestamp"]).date()
                 if entry_date == today:
-                    today_trade_count += 1
+                    # Check if it's a HOLD action
+                    entry_str = str(entry).lower()
+                    if "hold" in entry_str: 
+                        pass
+                    else:
+                        today_trade_count += 1
                 trade_history.append(entry)
             except:
                 entry_date = datetime.fromisoformat(line.split(" - ")[0].replace("Z", "+00:00")).date()                    
                 if entry_date == today:
-                    today_trade_count += 1
+                    entry_str = str(entry).lower()
+                    if "hold" in entry_str: 
+                        pass
+                    else:
+                        today_trade_count += 1
                 trade_history.append(line)
 
     except Exception:
