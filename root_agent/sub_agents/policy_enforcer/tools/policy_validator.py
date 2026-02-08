@@ -1,4 +1,4 @@
-from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio
+from ...trader.tools.portfolio_manager import load_portfolio
 from .policy_loading import load_policy
 import os
 

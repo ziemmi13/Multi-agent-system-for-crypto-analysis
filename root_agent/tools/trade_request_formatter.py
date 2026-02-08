@@ -2,8 +2,8 @@ from datetime import datetime, UTC
 import json
 import uuid
 
-from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio 
-from root_agent.sub_agents.trader.tools.trade import get_trade_history 
+from ..sub_agents.trader.tools.portfolio_manager import load_portfolio
+from ..sub_agents.trader.tools.trade import get_trade_history 
 
 def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float, stop_price: float, order_type: str, currency: str = "usd", rationale: str = "", volatility_1d: float = 0.0):
     """
