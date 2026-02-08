@@ -9,12 +9,11 @@ from dotenv import load_dotenv
 _csv_data = None
 
 # Determine directory paths
-PROJECT_DIR = pathlib.Path(__file__).parents[4]
 ROOT_DIR = pathlib.Path(__file__).parents[3]
-CHROMA_DB_DIR = PROJECT_DIR / "database/chroma_db"
-CSV_PATH = PROJECT_DIR / "database" / "cryptonews.csv"
 
-print(f"csv path: {CSV_PATH}")
+current_dir = pathlib.Path(__file__).parent
+CHROMA_DB_DIR = current_dir / "database" / "chroma_db"
+CSV_PATH = current_dir / "database" / "cryptonews.csv"
 
 load_dotenv(ROOT_DIR / '.env')
 
