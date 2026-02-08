@@ -1,19 +1,20 @@
 from dotenv import load_dotenv
-import pathlib
 from google.adk.agents import LlmAgent
 from google.adk.tools.agent_tool import AgentTool
 from google.genai.types import GenerateContentConfig
 from google.genai import types
+import os
+import pathlib
 
 from . import prompt
-import os
+from .tools.trade_request_formatter import format_trade_request
+
 from .sub_agents.business_analyst_1.agent import business_analyst_1
 from .sub_agents.business_analyst_2.agent import business_analyst_2
 from .sub_agents.technical_analyst.agent import technical_analyst
 from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
 from .sub_agents.trader.tools.trade import get_trade_history, log_policy_rejection
-from .tools.trade_request_formatter import format_trade_request
 
 # Load environment variables 
 root_dir = pathlib.Path(__file__).parent

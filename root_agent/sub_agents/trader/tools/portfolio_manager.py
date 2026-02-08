@@ -1,8 +1,8 @@
-import os
-from dotenv import load_dotenv
-import pathlib
 from binance.client import Client
+from dotenv import load_dotenv
+import os
 import requests
+import pathlib
 
 # 1. Setup
 ALLOWED_ASSETS = {

@@ -1,6 +1,7 @@
+from datetime import datetime, UTC
 import json
 import uuid
-from datetime import datetime, UTC
+
 from root_agent.sub_agents.trader.tools.portfolio_manager import load_portfolio 
 from root_agent.sub_agents.trader.tools.trade import get_trade_history 
 

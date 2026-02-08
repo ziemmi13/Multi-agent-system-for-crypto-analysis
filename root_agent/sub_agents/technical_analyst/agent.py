@@ -1,8 +1,8 @@
 from google.adk.agents import LlmAgent 
 from google.genai import types
 
-from .tools.get_crypto_technical_data import get_crypto_technical_data
 from .prompt import TECHNICAL_ANALYST_PROMPT
+from .tools.get_crypto_technical_data import get_crypto_technical_data
 
 technical_analyst = LlmAgent(
     model='gemini-2.5-flash',

@@ -1,8 +1,8 @@
 from google.adk.agents import LlmAgent
 from google.genai import types
 
-from .tools.policy_validator import validate_policy
 from .prompt import POLICY_ENFORCER_PROMPT
+from .tools.policy_validator import validate_policy
 
 policy_enforcer = LlmAgent(
     model='gemini-2.5-flash',

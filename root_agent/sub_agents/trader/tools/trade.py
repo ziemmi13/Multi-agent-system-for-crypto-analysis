@@ -1,9 +1,9 @@
-from locale import currency
-import logging
-import requests
 from datetime import datetime, UTC
-import os
 import json
+import logging
+import os
+import requests
+
 from .portfolio_manager import make_trade
 
 logger = logging.getLogger(__name__)
