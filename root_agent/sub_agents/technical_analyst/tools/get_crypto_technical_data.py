@@ -1,7 +1,4 @@
-from datetime import datetime
-from typing import Dict, Any
 import requests
-import numpy as np
 
 def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd"):
     """Fetches technical data for a given cryptocurrency from the CoinGecko API.
