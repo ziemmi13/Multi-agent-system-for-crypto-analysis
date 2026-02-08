@@ -8,6 +8,8 @@ root_dir = pathlib.Path(__file__).parents[3]
 load_dotenv(root_dir / '.env')
 API_KEY = os.getenv('CRYPTO_PANIC_API_KEY')
 
+print(f"Loaded API Key: {API_KEY[:4]}...")  # Print first 4 characters to confirm loading
+
 def get_news_from_cryptopanic(currency: str, filter: str = "hot") -> str:
     base_endpoint = "https://cryptopanic.com/api/developer/v2/posts/"
 
