@@ -8,7 +8,7 @@ import asyncio
 import random
 
 # Load environment variables from root directory
-root_dir = pathlib.Path(__file__).parent.parent.parent.parent
+root_dir = pathlib.Path(__file__).parents[3]
 load_dotenv(root_dir / '.env')
 API_ID = int(os.getenv('TELEGRAM_API_ID'))
 API_HASH = os.getenv('TELEGRAM_API_HASH')

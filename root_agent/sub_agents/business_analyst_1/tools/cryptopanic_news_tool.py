@@ -4,7 +4,7 @@ import pathlib
 import requests
 
 # Load environment variables from root directory
-root_dir = pathlib.Path(__file__).parent.parent.parent.parent
+root_dir = pathlib.Path(__file__).parents[3]
 load_dotenv(root_dir / '.env')
 API_KEY = os.getenv('CRYPTO_PANIC_API_KEY')
 

@@ -19,7 +19,7 @@ ALLOWED_ASSETS = {
     'PEPE': 'pepe'
 }
 
-root_dir = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
+root_dir = pathlib.Path(__file__).parents[3]
 load_dotenv(root_dir / '.env')
 
 BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
@@ -46,7 +46,7 @@ def get_batch_prices(coin_ids_list, currency="usd"):
     }
     
     try:
-        response = requests.get(endpoint, params=params)
+        response = requests.get(endpoint, params=params, timeout=10)
         if response.status_code == 200:
             return response.json() 
         else:
@@ -138,7 +138,8 @@ def make_trade(symbol: str, side: str, quantity: float, order_type: str,
         "symbol": symbol,
         "side": side,
         "type": order_type,
-        "quantity": quantity
+        "quantity": quantity,
+        "recvWindow": 10000
     }
     
     if order_type == "MARKET":
