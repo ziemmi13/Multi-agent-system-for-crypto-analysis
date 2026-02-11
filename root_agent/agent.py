@@ -17,6 +17,9 @@ from .sub_agents.technical_analyst.agent import technical_analyst
 from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
 from .sub_agents.trader.tools.trade import get_trade_history, log_policy_rejection
+from .sub_agents.business_analyst_1.sub_agents.google_search_agent.agent import google_search_agent
+from .sub_agents.business_analyst_1.tools.cryptopanic_news_tool import get_recent_news_from_cryptopanic
+from .sub_agents.policy_enforcer.tools.policy_loading import load_policy
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -65,9 +68,12 @@ root_agent = LlmAgent(
         AgentTool(agent=technical_analyst),
         AgentTool(agent=policy_enforcer),
         AgentTool(agent=trader),
+        AgentTool(agent=google_search_agent),
         format_trade_request,
         log_policy_rejection,
         get_trade_history,
+        get_recent_news_from_cryptopanic,
+        load_policy
     ],
     generate_content_config=my_config,
 )

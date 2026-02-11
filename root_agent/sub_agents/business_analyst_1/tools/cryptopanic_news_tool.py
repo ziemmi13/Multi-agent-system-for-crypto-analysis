@@ -44,3 +44,38 @@ def get_news_from_cryptopanic(currency: str, filter: str = "hot") -> str:
         output.append(f"{title}\n {description}\n {published}\n")
 
     return "\n".join(output)
+
+def get_recent_news_from_cryptopanic() -> str:
+    logger.info("Getting recent news from CryptoPanic")
+
+    base_endpoint = "https://cryptopanic.com/api/developer/v2/posts/"
+
+    params = {
+        "auth_token": API_KEY,
+        "kind": "news",
+        "public": "true",
+    }
+
+    try:
+        response = requests.get(base_endpoint, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    except Exception as e:
+        logger.error("Error fetching recent news from CryptoPanic: %s", e)
+        return f"Error fetching recent news: {e}"
+
+    results = data.get("results", [])
+
+    # Take only the 10 most recent posts
+    results = results[:10]
+
+    output = []
+    for post in results:
+        title = post.get("title", "No title")
+        description = post.get("description", "No description")
+        published = post.get("published_at", "Unknown time")
+        output.append(f"{title}\n {description}\n {published}\n")
+
+    return "\n".join(output)
+
+    
