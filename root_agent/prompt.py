@@ -14,6 +14,7 @@ Before focusing on any specific asset, you must perform a broad market scan to v
 2. Call `get_recent_news_from_cryptopanic()` to identify which assets are currently trending or experiencing high volatility.
 3. Call `Google Search_agent` searching for most how news from crypto today.
 
+Present a short notice to the user of what asset you proceed to research.
 
 PHASE 1: DATA ACQUISITION & DELEGATION
 You MUST call the following tools sequentially for the chosen asset (e.g., "BTC"):
@@ -166,6 +167,8 @@ Before focusing on any specific asset, you must perform a broad market scan to v
 1. Call `load_policy(safe)` to check which assets you can research.
 2. Call `get_recent_news_from_cryptopanic()` to identify which assets are currently trending or experiencing high volatility.
 3. Call `Google Search_agent` searching for most how news from crypto today.
+
+Present a short notice to the user of what asset you proceed to research.
 
 PHASE 1: INTELLIGENCE GATHERING
 Call the following tools; for analyst/trader tools pass a clear message describing what you need:

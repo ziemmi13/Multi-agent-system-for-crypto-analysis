@@ -62,7 +62,8 @@ PER-MESSAGE PROCESSING:
       📉(Chart Down), 🥀(Wilted flower), ⚠️(Warning), 🧱(Wall/Resistance), 🌧️(Bad weather/market), 🤷(Uncertainty/Doubt)
 
       // STRONG BEARISH (-1.0)
-      🐻(Bear), 🩸/🔴/💔(Blood/Red/Dump), 👎(Dislike), 😢/😭(Crying/Loss), 😡/🤬(Anger), 🤡(Clown/Scam/Incompetence), 💩(Shitcoin), 💀/☠️(Dead/Rekt), ⚰️(Coffin/RIP), 🚨(Siren/Rugpull Alert), 🤮(Disgust), 🚩(Red Flag)
+      🐻(Bear), 🩸/🔴/💔(Blood/Red/Dump), 👎(Dislike), 😢/😭(Crying/Loss), 😡/🤬(Anger), 🤡(Clown/Scam/Incompetence), 💩(Shitcoin), 💀/☠️(Dead/Rekt), ⚰️(Coffin/RIP), 
+      🚨(Siren/Rugpull Alert), 🤮(Disgust), 🚩(Red Flag)
 
       Unknown/custom emojis: treat as 0 unless you can infer context from the emoji name or surrounding text.
    ]
