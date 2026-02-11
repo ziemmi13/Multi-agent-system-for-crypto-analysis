@@ -2,15 +2,17 @@ import os
 from dotenv import load_dotenv
 import pathlib
 import requests
+import logging
+
+logger = logging.getLogger("root_agent")
 
 # Load environment variables from root directory
 root_dir = pathlib.Path(__file__).parents[3]
 load_dotenv(root_dir / '.env')
 API_KEY = os.getenv('CRYPTO_PANIC_API_KEY')
 
-print(f"Loaded API Key: {API_KEY[:4]}...")  # Print first 4 characters to confirm loading
-
 def get_news_from_cryptopanic(currency: str, filter: str = "hot") -> str:
+    logger.info("Getting news from CryptoPanic for currency: %s, filter: %s", currency, filter)
     base_endpoint = "https://cryptopanic.com/api/developer/v2/posts/"
 
     params = {
@@ -26,10 +28,12 @@ def get_news_from_cryptopanic(currency: str, filter: str = "hot") -> str:
         response.raise_for_status()
         data = response.json()
     except Exception as e:
+        logger.error("Error fetching news from CryptoPanic: %s", e)
         return f"Error fetching news: {e}"
 
     results = data.get("results", [])
     if not results:
+        logger.info("No news found for %s.", currency)
         return f"No news found for {currency}."
 
     output = []

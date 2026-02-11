@@ -1,9 +1,12 @@
 from datetime import datetime, UTC
 import json
 import uuid
+import logging
 
 from ..sub_agents.trader.tools.portfolio_manager import load_portfolio
 from ..sub_agents.trader.tools.trade import get_trade_history 
+
+logger = logging.getLogger("root_agent")
 
 def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symbol: str, quantity: float, entry_price: float, stop_price: float, order_type: str, currency: str = "usd", rationale: str = "", volatility_1d: float = 0.0):
     """
@@ -26,6 +29,8 @@ def format_trade_request(action: str, coin_id: str, coin_market_cap: float, symb
     - A JSON string representing the TradeRequest object.
 
     """
+
+    logger.info("Formatting trade request.")
     
     portfolio_assets, full_portfolio_value_usd = load_portfolio()
 

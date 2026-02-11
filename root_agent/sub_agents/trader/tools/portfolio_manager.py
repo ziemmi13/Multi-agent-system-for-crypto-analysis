@@ -1,5 +1,6 @@
 from binance.client import Client
 from dotenv import load_dotenv
+import logging
 import os
 import requests
 import pathlib
@@ -26,6 +27,8 @@ BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET")
 
 client = Client(BINANCE_API_KEY, BINANCE_API_SECRET, testnet=True)
+
+logger = logging.getLogger("root_agent")
 
 def get_batch_prices(coin_ids_list, currency="usd"):
     """Fetches current prices for a list of CoinGecko IDs in the specified currency.
@@ -64,7 +67,9 @@ def load_portfolio():
         dict: A dictionary with asset details and their USD values.
         float: Total portfolio value in USD.
     """
-    
+
+    logger.info("Loading portfolio")
+
     account_info = client.get_account()
     balances = account_info.get("balances", [])
     
@@ -154,8 +159,10 @@ def make_trade(symbol: str, side: str, quantity: float, order_type: str,
 
     # Execute the order
     try:
+        logger.info("Placing order: %s", params)
         order = client.create_order(**params)
+        logger.info("Order placed: %s", order)
         return order
     except Exception as e:
-        print(f"Error placing order: {e}")
+        logger.error("Error placing order: %s", e)
         return None

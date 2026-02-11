@@ -4,6 +4,9 @@ import pandas as pd
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
 from dotenv import load_dotenv
+import logging
+
+logger = logging.getLogger("root_agent")
 
 # Global cache for CSV data
 _csv_data = None
@@ -48,6 +51,7 @@ def search_similar_news(article_headline: str, article_summary: str, similarity_
         A formatted string with matching article information (headline, summary, cause, effect, sentiment) if found, 
         otherwise empty string if no matches.
     """
+    logger.info("Searching for similar news in the RAG db")
     try:
         # Generate embedding for the article text
         article_embedding = openai_ef([article_summary])

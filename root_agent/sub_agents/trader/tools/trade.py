@@ -6,7 +6,7 @@ import requests
 
 from .portfolio_manager import make_trade
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("root_agent")
 
 COINGECKO_ENDPOINT = "https://api.coingecko.com/api/v3"
 TRADE_LOG_FILE_PATH = os.path.join(os.path.dirname(__file__), "trade_log.txt")
@@ -40,27 +40,45 @@ def log_trade(action: str, coin_id: str, symbol: str, current_price: float, curr
     """
     action_l = action.lower() if isinstance(action, str) else ""
     if action_l not in ("buy", "sell", "hold"):
+        logger.warning("log_trade called with unsupported action: %s", action)
         return {"error": "Unsupported action. Use 'buy', 'sell', or 'hold'."}
     
     if current_price is None:
-        price_str = str(get_current_price(coin_id, currency))
+        fetched_price = get_current_price(coin_id, currency)
+        price_str = str(fetched_price)
     else:
+        fetched_price = current_price
         price_str = str(current_price)
 
     if action_l == "hold":
-        log_entry = f"{datetime.now(UTC).isoformat().replace('+00:00', 'Z')} - {action.upper()} - {coin_id} ({symbol}) at {price_str} {currency}\n"
-    else: # Buy or sell is already logged in process_trade_request, so we dont want to duplicate the count in the log, we just want to log the action without counting it as a new trade in the history
+        log_entry = (
+            f"{datetime.now(UTC).isoformat().replace('+00:00', 'Z')} - {action.upper()} - "
+            f"{coin_id} ({symbol}) at {price_str} {currency}\n"
+        )
+    else:  # Buy or sell is already logged in process_trade_request, so we dont want to duplicate the count in the log, we just want to log the action without counting it as a new trade in the history
         action_taken = "BOUGHT" if action_l == "buy" else "SOLD"
-        log_entry = f"{datetime.now(UTC).isoformat().replace('+00:00', 'Z')} - {action_taken} - {coin_id} ({symbol}) at {price_str} {currency}\n"
+        log_entry = (
+            f"{datetime.now(UTC).isoformat().replace('+00:00', 'Z')} - {action_taken} - "
+            f"{coin_id} ({symbol}) at {price_str} {currency}\n"
+        )
     
     with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(log_entry)
-    logger.info(log_entry)
-    return {"status": "logged", "message": f"Trade action '{action}' for {symbol} logged at price {price_str} {currency}."}
+
+    logger.info(
+        "Trade saved to memory: action=%s, coin_id=%s, symbol=%s, price=%s %s, fetched_price=%s",
+        action_l.upper(),
+        coin_id,
+        symbol,
+        price_str,
+        currency,
+        fetched_price,
+    )
+    return {"status": "saved to memory", "message": f"Trade action '{action}' for {symbol} saved to memory at price {price_str} {currency}."}
 
 
 def log_policy_rejection(trade_request: dict, rejection_reason: str, violations: list[dict], policy_response: dict):
-    """Logs a policy rejection to the trade log file.
+    """Saves a policy rejection to the trade log file and logs it to the console.
     
     Args:
         trade_request (dict): The trade request that was rejected.
@@ -91,10 +109,10 @@ def log_policy_rejection(trade_request: dict, rejection_reason: str, violations:
     
     # Create rejection log entry
     reason_text = rejection_reason or "Policy violation"
-    log_entry = f"{datetime.now(UTC).isoformat().replace("+00:00", "Z")} - REJECTED - {coin_id} ({symbol}) at {current_price} {currency} - Reason: {reason_text}\n"
-    
-    with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
-        log_file.write(log_entry)
+    log_entry = (
+        f"{datetime.now(UTC).isoformat().replace('+00:00', 'Z')} - REJECTED - "
+        f"{coin_id} ({symbol}) at {current_price} {currency} - Reason: {reason_text}\n"
+    )
     
     # Also log the full JSON entry for audit trail
     rejection_entry = {
@@ -107,8 +125,15 @@ def log_policy_rejection(trade_request: dict, rejection_reason: str, violations:
     }
     with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as log_file:
         log_file.write(json.dumps(rejection_entry, default=str) + "\n")
-    logger.warning(rejection_entry)
-    return {"status": "logged", "message": f"Policy rejection logged for {symbol}"}
+
+    logger.warning(
+        "Policy rejection logged: symbol=%s, coin_id=%s, reason=%s, violations=%s",
+        symbol,
+        coin_id,
+        reason_text,
+        violations or [],
+    )
+    return {"status": "saved to memory", "message": f"Policy rejection saved to memory for {symbol}"}
 
 
 def process_trade_request(trade_request: dict) -> dict:
@@ -128,7 +153,6 @@ def process_trade_request(trade_request: dict) -> dict:
 
     # Basic validation
     action = trade_request.get("action", "").lower()
-    logger.info("Processing trade request: action=%s, asset=%s", action, trade_request.get("asset", {}).get("symbol", "?"))
     asset = trade_request.get("asset", {})
     position = trade_request.get("position", {})
     order_type = position.get("order_type", "MARKET").upper()
@@ -138,6 +162,19 @@ def process_trade_request(trade_request: dict) -> dict:
     coin_id = asset.get("coin_id")
     symbol = asset.get("symbol")
     currency = asset.get("currency", "usd")
+
+    logger.info(
+        "Processing trade request: action=%s, symbol=%s, coin_id=%s, order_type=%s, quantity=%s, "
+        "entry_price=%s, current_price=%s, currency=%s",
+        action,
+        symbol or "?",
+        coin_id or "?",
+        order_type,
+        position.get("quantity", 0.001),
+        entry_price,
+        current_price,
+        currency,
+    )
 
     execution = None
     if action == "hold":
@@ -177,11 +214,19 @@ def process_trade_request(trade_request: dict) -> dict:
     # Append audit log with the full request and execution result
     try:
         with open(TRADE_LOG_FILE_PATH, "a", encoding="utf-8") as f:
-            entry = {"timestamp": datetime.now().isoformat(), "trade_request": trade_request, "execution": execution}
+            entry = {
+                "timestamp": datetime.now().isoformat(),
+                "trade_request": trade_request,
+                "execution": execution,
+            }
             f.write(json.dumps(entry, default=str) + "\n")
             logger.info("Audit log entry written: %s", entry)
     except Exception:
-        logger.error("Failed to write audit log entry: %s", entry)
+        logger.exception(
+            "Failed to write audit log entry for trade_request=%s, execution=%s",
+            trade_request,
+            execution,
+        )
 
     return {"trade_request": trade_request, "execution": execution}
 
@@ -195,8 +240,9 @@ def get_trade_history(limit: int = 20) -> dict:
     """
     
     today_trade_count = 0
-    today = datetime.now(UTC).date()
+    today_str = datetime.now(UTC).strftime('%Y-%m-%d')
 
+    logger.info("Getting trade history")
     try:
         with open(TRADE_LOG_FILE_PATH, "r") as f:
             lines = f.readlines()
@@ -207,8 +253,8 @@ def get_trade_history(limit: int = 20) -> dict:
         for line in reversed_lines[:limit]:
             try:
                 entry = json.loads(line)
-                entry_date = datetime.fromisoformat(entry["timestamp"]).date()
-                if entry_date == today:
+                entry_date = entry["timestamp"]
+                if entry_date == today_str:
                     # Check if it's a HOLD action
                     entry_str = str(entry).lower()
                     if "hold" in entry_str: 
@@ -217,16 +263,18 @@ def get_trade_history(limit: int = 20) -> dict:
                         today_trade_count += 1
                 trade_history.append(entry)
             except:
-                entry_date = datetime.fromisoformat(line.split(" - ")[0].replace("Z", "+00:00")).date()                    
-                if entry_date == today:
-                    entry_str = str(entry).lower()
-                    if "hold" in entry_str: 
+                date = line[:10]
+                if date == today_str:
+                    if "hold" in line: 
                         pass
                     else:
                         today_trade_count += 1
                 trade_history.append(line)
 
     except Exception:
-        return {"error": "Failed to get trade history", "trade_history": [], "today_trade_count": today_trade_count}
+        logger.exception("Failed to get trade history (limit=%s)", limit)
+        return {
+            "error": "Failed to get trade history",
+        }
     
     return {"trade_history": trade_history, "today_trade_count": today_trade_count}

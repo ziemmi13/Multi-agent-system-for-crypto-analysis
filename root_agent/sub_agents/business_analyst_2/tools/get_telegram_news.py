@@ -1,11 +1,14 @@
 from typing import List
 from telethon import TelegramClient
 from telethon.sessions import StringSession
+import logging
 import os
 from dotenv import load_dotenv
 import pathlib
 import asyncio
 import random
+
+logger = logging.getLogger("root_agent")
 
 # Load environment variables from root directory
 root_dir = pathlib.Path(__file__).parents[3]
@@ -44,6 +47,7 @@ def parse_message_reactions(reactions):
     return ", ".join(reaction_strings)
 
 async def get_channel_news(channel_handle, client, limit=5):
+    logger.info("Getting news from Telegram channel: %s", channel_handle)
     try:
         news_items = []
         async for msg in client.iter_messages(channel_handle, limit=limit):
@@ -86,12 +90,19 @@ async def get_telegram_news(channels: List[str], limit: int = 5):
     
     if not client.is_connected():
         await client.connect()
+
+    logger.info("Fetching news from Telegram channels: %s", channels)
     
     all_news = []
     for channel in channels:
         # Delay between scraping
         delay = random.uniform(1.5, 5)
-        print(f"DEBUG: Waiting {delay:.2f}s before fetching {channel}...")
+        logger.info(
+            "Waiting %.2fs before fetching Telegram channel '%s' (limit=%d)",
+            delay,
+            channel,
+            limit,
+        )
         await asyncio.sleep(delay)
 
         news = await get_channel_news(channel, client, limit=limit)

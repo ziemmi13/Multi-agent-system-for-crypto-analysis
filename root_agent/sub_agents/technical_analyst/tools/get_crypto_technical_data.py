@@ -1,4 +1,7 @@
 import requests
+import logging
+
+logger = logging.getLogger("root_agent")
 
 def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd"):
     """Fetches technical data for a given cryptocurrency from the CoinGecko API.
@@ -17,6 +20,7 @@ def get_crypto_technical_data(coin_id: str, symbol: str,  currency: str = "usd")
     
     # Get the filtered technical data from the endpoint
     try:
+        logger.info("Getting technical data for coin: %s", coin_id)
         coin_data = requests.get(detailed_data_for_coin).json()
         current_price = coin_data.get("market_data", {}).get("current_price", {}).get(f"{currency}", "N/A")
         
@@ -132,5 +136,5 @@ def calculate_volatility_1d(coin_id: str, currency: str = "usd") -> float:
         return round(volatility_range, 2)
         
     except Exception as e:
-        print(f"Error calculating volatility: {e}")
+        logger.info(f"Error calculating volatility: {e}")
         return "N/A" #type: ignore

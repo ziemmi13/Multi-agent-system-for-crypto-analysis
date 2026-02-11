@@ -3,8 +3,10 @@ from google.adk.agents import LlmAgent
 from google.adk.tools.agent_tool import AgentTool
 from google.genai.types import GenerateContentConfig
 from google.genai import types
+import logging
 import os
 import pathlib
+import sys  # Potrzebne do przekierowania na stdout
 
 from . import prompt
 from .tools.trade_request_formatter import format_trade_request
@@ -15,6 +17,21 @@ from .sub_agents.technical_analyst.agent import technical_analyst
 from .sub_agents.policy_enforcer.agent import policy_enforcer
 from .sub_agents.trader.agent import trader
 from .sub_agents.trader.tools.trade import get_trade_history, log_policy_rejection
+
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+
+# Konfiguracja bazowa
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.StreamHandler(sys.stdout) 
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables 
 root_dir = pathlib.Path(__file__).parent
@@ -53,14 +70,4 @@ root_agent = LlmAgent(
         get_trade_history,
     ],
     generate_content_config=my_config,
-    # sub_agents=[business_analyst_1, business_analyst_2, technical_analyst, policy_enforcer, trader],
-)
-
-# Logging setup
-import logging
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
 )
